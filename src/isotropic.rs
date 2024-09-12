@@ -1,29 +1,36 @@
-use crate::{
-    material::Material, ray::Ray3, solid_texture::SolidTexture, texture::Texture, vector_3::Vec3,
-};
+use crate::hittable::HitRecord;
+use crate::material::{Material, ScatterPDF, ScatterRecord};
+use crate::ray::Ray3;
+use crate::solid_texture::SolidTexture;
+use crate::sphere_pdf::SpherePDF;
+use crate::texture::Texture;
+use crate::vector_3::Vec3;
+
+use std::f64::consts::FRAC_1_PI;
 use std::sync::Arc;
 pub struct Isotropic {
-    albedo: Arc<dyn Texture>,
+    albedo: Arc<dyn Texture + Sync + Send>,
 }
 
 impl Material for Isotropic {
     fn scatter(
         &self,
-        ray_in: &crate::ray::Ray3,
-        hit_record: &crate::hittable::HitRecord,
-        attenuation: &mut crate::vector_3::Vec3,
-        scattered: &mut crate::ray::Ray3,
+        _ray_in: &crate::ray::Ray3,
+        hit_rec: &HitRecord,
+        scatter_rec: &mut ScatterRecord,
     ) -> bool {
-        *scattered = Ray3::new(hit_record.point, Vec3::random_unit_vector(), ray_in.time());
-        *attenuation = self
-            .albedo
-            .value(hit_record.u, hit_record.v, hit_record.point);
+        scatter_rec.attenuation = self.albedo.value(hit_rec.u, hit_rec.v, hit_rec.point);
+        scatter_rec.pdf = ScatterPDF::PDF(Box::new(SpherePDF {}));
         true
+    }
+
+    fn scattering_pdf(&self, _ray_in: &Ray3, _hit_record: &HitRecord, _scattered: &Ray3) -> f64 {
+        0.25 * FRAC_1_PI
     }
 }
 
 impl Isotropic {
-    pub fn new(albedo: Arc<dyn Texture>) -> Isotropic {
+    pub fn new(albedo: Arc<dyn Texture + Sync + Send>) -> Isotropic {
         Isotropic { albedo }
     }
 

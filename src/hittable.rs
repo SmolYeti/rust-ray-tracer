@@ -9,7 +9,7 @@ use std::sync::Arc;
 pub struct HitRecord {
     pub point: Vec3,
     pub normal: Vec3,
-    pub mat: Arc<dyn Material>,
+    pub mat: Arc<dyn Material + Sync + Send>,
     pub time: f64,
     pub u: f64,
     pub v: f64,
@@ -18,7 +18,16 @@ pub struct HitRecord {
 
 pub trait Hittable {
     fn hit(&self, r: &Ray3, time: Interval, hit_record: &mut HitRecord) -> bool;
+
     fn bounding_box(&self) -> AABB;
+
+    fn pdf_value(&self, _origin: &Vec3, _direction: &Vec3) -> f64 {
+        0.0
+    }
+
+    fn random(&self, _origin: &Vec3) -> Vec3 {
+        Vec3::new(1.0, 0.0, 0.0)
+    }
 }
 
 impl HitRecord {

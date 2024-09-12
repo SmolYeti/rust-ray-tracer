@@ -15,6 +15,10 @@ impl Ray3 {
         Ray3::new(Vec3::empty(), Vec3::empty(), 0.0)
     }
 
+    pub fn copy(&self) -> Ray3 {
+        Ray3::new(self.origin.clone(), self.dir.clone(), self.time)
+    }
+
     pub fn origin(&self) -> Vec3 {
         self.origin.clone()
     }

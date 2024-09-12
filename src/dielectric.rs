@@ -1,5 +1,5 @@
 use crate::hittable::HitRecord;
-use crate::material::Material;
+use crate::material::{Material, ScatterPDF, ScatterRecord};
 use crate::ray::Ray3;
 use crate::vector_3::Vec3;
 
@@ -9,35 +9,29 @@ pub struct Dielectric {
 }
 
 impl Material for Dielectric {
-    fn scatter(
-        &self,
-        ray_in: &Ray3,
-        hit_record: &HitRecord,
-        attenuation: &mut Vec3,
-        scattered: &mut Ray3,
-    ) -> bool {
-        attenuation.set_vec(Vec3::new(1.0, 1.0, 1.0));
-        let refraction_ratio = if hit_record.front_face {
+    fn scatter(&self, ray_in: &Ray3, hit_rec: &HitRecord, scatter_rec: &mut ScatterRecord) -> bool {
+        scatter_rec.attenuation = Vec3::new(1.0, 1.0, 1.0);
+
+        let refraction_ratio = if hit_rec.front_face {
             1.0 / self.ir
         } else {
             self.ir
         };
 
         let unit_dir = ray_in.direction().unit_vector();
-        let cos_theta = (-unit_dir).dot(&hit_record.normal).min(1.0);
+        let cos_theta = (-unit_dir).dot(&hit_rec.normal).min(1.0);
         let sin_theta = (1.0 - (cos_theta * cos_theta)).sqrt();
 
         let cannot_refract = refraction_ratio * sin_theta > 1.0;
         let direction: Vec3;
         if cannot_refract || Dielectric::reflectance(cos_theta, refraction_ratio) > rand::random() {
-            direction = unit_dir.reflect(&hit_record.normal);
+            direction = unit_dir.reflect(&hit_rec.normal);
         } else {
-            direction = Vec3::refract(&unit_dir, &hit_record.normal, refraction_ratio);
+            direction = Vec3::refract(&unit_dir, &hit_rec.normal, refraction_ratio);
         }
 
-        scattered.set_origin(hit_record.point);
-        scattered.set_direction(direction);
-        scattered.set_time(ray_in.time());
+        let ray_out = Ray3::new(hit_rec.point, direction, ray_in.time());
+        scatter_rec.pdf = ScatterPDF::Skip(ray_out);
         true
     }
 }

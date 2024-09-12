@@ -1,7 +1,11 @@
 use crate::hittable::HitRecord;
 use crate::hittable::Hittable;
-use crate::hittable_list::HittableList;
+use crate::hittable_pdf::HittablePDF;
 use crate::interval::Interval;
+use crate::material::ScatterPDF;
+use crate::material::ScatterRecord;
+use crate::mixture_pdf::MixturePDF;
+use crate::pdf::PDF;
 use crate::ray::Ray3;
 use crate::rtweekend::degree_to_radians;
 use crate::vector_3::Vec3;
@@ -99,7 +103,8 @@ impl Camera {
 
     pub fn render(
         &mut self,
-        world: Arc<HittableList>,
+        world: Arc<dyn Hittable + Sync + Send>,
+        lights: Option<Arc<dyn Hittable + Sync + Send>>,
         multi_thread: bool,
         threads: u32,
     ) -> Vec<u32> {
@@ -123,8 +128,18 @@ impl Camera {
                     {
                         let cam_clone = Arc::clone(&arc_cam);
                         let world_clone = Arc::clone(&world);
+                        let lights_clone = match &lights {
+                            None => None,
+                            Some(unwrapped_lights) => Some(Arc::clone(&unwrapped_lights)),
+                        };
                         scope.execute(move || {
-                            Self::thread_render(cam_clone, world_clone, j as i32, buffer_slice)
+                            Self::thread_render(
+                                cam_clone,
+                                world_clone,
+                                lights_clone,
+                                j as i32,
+                                buffer_slice,
+                            )
                         });
                     }
                 });
@@ -135,7 +150,8 @@ impl Camera {
                     let mut color_vec = Vec3::new(0.0, 0.0, 0.0);
                     for _ in 0..self.samples_per_pixel {
                         let ray_sample = self.get_ray(i, j);
-                        color_vec = color_vec + self.ray_color(ray_sample, self.max_depth, &world);
+                        color_vec =
+                            color_vec + self.ray_color(ray_sample, self.max_depth, &world, &lights);
                     }
                     buffer.push(crate::color::vec_to_val(&color_vec, self.samples_per_pixel));
                 }
@@ -148,7 +164,8 @@ impl Camera {
 
     pub fn thread_render(
         cam: Arc<Camera>,
-        world: Arc<HittableList>,
+        world: Arc<dyn Hittable + Sync + Send>,
+        lights: Option<Arc<dyn Hittable + Sync + Send>>,
         j_idx: i32,
         buffer: &mut [u32],
     ) {
@@ -156,7 +173,7 @@ impl Camera {
             let mut color_vec = Vec3::new(0.0, 0.0, 0.0);
             for _ in 0..cam.samples_per_pixel {
                 let ray_sample = cam.get_ray(i as i32, j_idx);
-                color_vec = color_vec + cam.ray_color(ray_sample, cam.max_depth, &world);
+                color_vec = color_vec + cam.ray_color(ray_sample, cam.max_depth, &world, &lights);
             }
             *val = crate::color::vec_to_val(&color_vec, cam.samples_per_pixel);
         }
@@ -232,30 +249,59 @@ impl Camera {
         self.camera_center + (point.x * self.defocus_disk_u) + (point.y * self.defocus_disk_v)
     }
 
-    fn ray_color(&self, r: Ray3, depth: i32, world: &HittableList) -> Vec3 {
+    fn ray_color(
+        &self,
+        r: Ray3,
+        depth: i32,
+        world: &Arc<dyn Hittable + Sync + Send>,
+        lights: &Option<Arc<dyn Hittable + Sync + Send>>,
+    ) -> Vec3 {
         let mut hit_record = HitRecord::new();
         if depth <= 0 {
             Vec3::new(0.0, 0.0, 0.0)
-        } else if world.hit(&r, Interval::new(0.001, f64::INFINITY), &mut hit_record) {
-            let mut scattered = Ray3::empty();
-            let mut attenuation = Vec3::empty();
-            let color_emission =
-                hit_record
-                    .mat
-                    .emitted(hit_record.u, hit_record.v, hit_record.point);
+        } else if world.hit(&r, Interval::new(0.0001, f64::INFINITY), &mut hit_record) {
+            let mut color_emission = hit_record.mat.emitted(
+                &r,
+                &hit_record,
+                hit_record.u,
+                hit_record.v,
+                hit_record.point,
+            );
             let mut color_scattered = Vec3::empty();
-            if hit_record
-                .mat
-                .scatter(&r, &hit_record, &mut attenuation, &mut scattered)
-            {
-                color_scattered = attenuation * self.ray_color(scattered, depth - 1, &world);
+            let mut scatter_rec = ScatterRecord::new();
+            if hit_record.mat.scatter(&r, &hit_record, &mut scatter_rec) {
+                match scatter_rec.pdf {
+                    ScatterPDF::PDF(surface_pdf) => {
+                        let pdf: Box<dyn PDF> = match lights {
+                            Some(unwrapped_lights) => {
+                                let light_pdf = Box::new(HittablePDF::new(
+                                    Arc::clone(unwrapped_lights),
+                                    hit_record.point,
+                                ));
+                                Box::new(MixturePDF::new(light_pdf, surface_pdf))
+                            }
+                            None => surface_pdf,
+                        };
+
+                        let scattered = Ray3::new(hit_record.point, pdf.generate(), r.time());
+                        let pdf_val = pdf.value(&scattered.direction());
+
+                        let scattered_pdf =
+                            hit_record.mat.scattering_pdf(&r, &hit_record, &scattered);
+                        let sample_color = self.ray_color(scattered, depth - 1, &world, &lights);
+                        color_scattered =
+                            (scatter_rec.attenuation * scattered_pdf * sample_color) / pdf_val;
+                    }
+                    ScatterPDF::Skip(ray) => {
+                        color_emission = Vec3::empty();
+                        let sample_color = self.ray_color(ray, depth - 1, &world, &lights);
+                        color_scattered = scatter_rec.attenuation * sample_color;
+                    }
+                }
             }
-            color_scattered + color_emission
+            color_emission + color_scattered
         } else {
             self.background
-            // let unit_direction = r.direction().unit_vector();
-            // let a = 0.5 * (unit_direction.y + 1.0);
-            // ((1.0 - a) * Vec3::new(1.0, 1.0, 1.0)) + (a * Vec3::new(0.5, 0.7, 1.0))
         }
     }
 }

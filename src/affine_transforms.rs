@@ -5,16 +5,16 @@ use crate::ray::Ray3;
 use crate::rtweekend;
 use crate::vector_3::Vec3;
 use std::f64::INFINITY;
-use std::rc::Rc;
+use std::sync::Arc;
 
 pub struct Translate {
-    object: Rc<dyn Hittable>,
+    object: Arc<dyn Hittable + Sync + Send>,
     bbox: AABB,
     offset: Vec3,
 }
 
 pub struct RotateY {
-    object: Rc<dyn Hittable>,
+    object: Arc<dyn Hittable + Sync + Send>,
     bbox: AABB,
     sin_theta: f64,
     cos_theta: f64,
@@ -56,12 +56,12 @@ impl Hittable for RotateY {
 
         if self.object.hit(&rotated_ray, time, hit_record) {
             let mut point = hit_record.point.clone();
-            point.x = self.cos_theta * hit_record.point.x - self.sin_theta * hit_record.point.z;
-            point.z = self.sin_theta * hit_record.point.x + self.cos_theta * hit_record.point.z;
+            point.x = self.cos_theta * hit_record.point.x + self.sin_theta * hit_record.point.z;
+            point.z = -self.sin_theta * hit_record.point.x + self.cos_theta * hit_record.point.z;
 
             let mut normal = hit_record.normal.clone();
-            normal.x = self.cos_theta * hit_record.normal.x - self.sin_theta * hit_record.normal.z;
-            normal.z = self.sin_theta * hit_record.normal.x + self.cos_theta * hit_record.normal.z;
+            normal.x = self.cos_theta * hit_record.normal.x + self.sin_theta * hit_record.normal.z;
+            normal.z = -self.sin_theta * hit_record.normal.x + self.cos_theta * hit_record.normal.z;
 
             hit_record.point = point;
             hit_record.normal = normal;
@@ -78,7 +78,7 @@ impl Hittable for RotateY {
 }
 
 impl Translate {
-    pub fn new(object: Rc<dyn Hittable>, offset: Vec3) -> Translate {
+    pub fn new(object: Arc<dyn Hittable + Sync + Send>, offset: Vec3) -> Translate {
         let bbox = object.bounding_box() + offset;
         Translate {
             object,
@@ -89,7 +89,7 @@ impl Translate {
 }
 
 impl RotateY {
-    pub fn new(object: Rc<dyn Hittable>, angle: f64) -> RotateY {
+    pub fn new(object: Arc<dyn Hittable + Sync + Send>, angle: f64) -> RotateY {
         let radians = rtweekend::degree_to_radians(angle);
         let sin_theta = radians.sin();
         let cos_theta = radians.cos();

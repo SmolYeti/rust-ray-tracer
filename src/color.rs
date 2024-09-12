@@ -10,6 +10,11 @@ pub fn vals_to_val(x: f64, y: f64, z: f64, samples: i32) -> u32 {
     let scale = 1.0 / samples as f64;
     let to_8bit = 255.999;
 
+    // Replace NaN components with zero
+    let x = if x.is_nan() { 0.0 } else { x };
+    let y = if y.is_nan() { 0.0 } else { y };
+    let z = if z.is_nan() { 0.0 } else { z };
+
     // Divde color by the number of samples
     let red = x * scale;
     let green = y * scale;

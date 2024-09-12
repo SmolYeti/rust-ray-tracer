@@ -1,13 +1,12 @@
 use crate::solid_texture::SolidTexture;
 use crate::texture::Texture;
 use crate::vector_3::Vec3;
-use std::rc::Rc;
+use std::sync::Arc;
 
-// #[derive(Debug, Clone, Copy)]
 pub struct CheckerTexture {
     inv_scale: f64,
-    even: Rc<dyn Texture>,
-    odd: Rc<dyn Texture>,
+    even: Arc<dyn Texture + Sync + Send>,
+    odd: Arc<dyn Texture + Sync + Send>,
 }
 
 impl Texture for CheckerTexture {
@@ -29,8 +28,8 @@ impl CheckerTexture {
     pub fn new(scale: f64, even_color: Vec3, odd_color: Vec3) -> CheckerTexture {
         CheckerTexture {
             inv_scale: (1.0 / scale),
-            even: Rc::new(SolidTexture::new(even_color)),
-            odd: Rc::new(SolidTexture::new(odd_color)),
+            even: Arc::new(SolidTexture::new(even_color)),
+            odd: Arc::new(SolidTexture::new(odd_color)),
         }
     }
 }

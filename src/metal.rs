@@ -1,5 +1,5 @@
 use crate::hittable::HitRecord;
-use crate::material::Material;
+use crate::material::{Material, ScatterPDF, ScatterRecord};
 use crate::ray::Ray3;
 use crate::vector_3::Vec3;
 
@@ -10,20 +10,13 @@ pub struct Metal {
 }
 
 impl Material for Metal {
-    fn scatter(
-        &self,
-        ray_in: &Ray3,
-        hit_record: &HitRecord,
-        attenuation: &mut Vec3,
-        scattered: &mut Ray3,
-    ) -> bool {
-        let reflected = ray_in.direction().unit_vector().reflect(&hit_record.normal)
+    fn scatter(&self, ray_in: &Ray3, hit_rec: &HitRecord, scatter_rec: &mut ScatterRecord) -> bool {
+        let reflected = ray_in.direction().reflect(&hit_rec.normal).unit_vector()
             + (self.fuzz * Vec3::random_in_unit_sphere());
-        scattered.set_origin(hit_record.point);
-        scattered.set_direction(reflected);
-        scattered.set_time(ray_in.time());
-        attenuation.set_vec(self.albedo);
-        scattered.direction().dot(&hit_record.normal) > 0.0
+
+        scatter_rec.attenuation = self.albedo;
+        scatter_rec.pdf = ScatterPDF::Skip(Ray3::new(hit_rec.point, reflected, ray_in.time()));
+        true
     }
 }
 

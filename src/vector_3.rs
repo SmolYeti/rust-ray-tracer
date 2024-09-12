@@ -1,4 +1,5 @@
 use core::ops;
+use std::f64::consts::PI;
 
 use crate::rtweekend::random_f64_range;
 
@@ -94,7 +95,7 @@ impl Vec3 {
 
     pub fn random_in_unit_sphere() -> Vec3 {
         let mut sphere = Vec3::random_range(-1.0, 1.0);
-        if sphere.length_squared() > 1.0 {
+        while sphere.length_squared() > 1.0 {
             sphere = Vec3::random_range(-1.0, 1.0);
         }
         sphere
@@ -122,6 +123,19 @@ impl Vec3 {
         disk
     }
 
+    pub fn random_cosine_direction() -> Vec3 {
+        let r1 = rand::random::<f64>();
+        let r2 = rand::random::<f64>();
+        let sqrt_r2 = r2.sqrt();
+
+        let phi = 2.0 * PI * r1;
+        let x = f64::cos(phi) * sqrt_r2;
+        let y = f64::sin(phi) * sqrt_r2;
+        let z = f64::sqrt(1.0 - r2);
+
+        Vec3::new(x, y, z)
+    }
+
     pub fn reflect(&self, normal: &Vec3) -> Vec3 {
         self.clone() - (2.0 * self.dot(normal) * normal)
     }
@@ -134,6 +148,7 @@ impl Vec3 {
     }
 }
 
+// Negate
 impl ops::Neg for Vec3 {
     type Output = Self;
 
@@ -321,6 +336,7 @@ impl<'a> ops::Sub<&'a Vec3> for f64 {
     }
 }
 
+// Multiply
 impl ops::Mul<Self> for Vec3 {
     type Output = Vec3;
 
@@ -393,6 +409,7 @@ impl<'a> ops::Mul<&'a Vec3> for f64 {
     }
 }
 
+// Divide
 impl ops::Div<Vec3> for Vec3 {
     type Output = Self;
 
@@ -462,5 +479,44 @@ impl<'a> ops::Div<&'a Vec3> for f64 {
             y: self / _rhs.y,
             z: self / _rhs.z,
         }
+    }
+}
+#[cfg(test)]
+mod tests {
+    use crate::vector_3::Vec3;
+
+    #[test]
+    fn test_new() {
+        let vec = Vec3::new(1.0, 2.0, 3.0);
+        assert_eq!(vec.x, 1.0);
+        assert_eq!(vec.y, 2.0);
+        assert_eq!(vec.z, 3.0);
+    }
+
+    #[test]
+    fn test_empty() {
+        let vec = Vec3::empty();
+        assert_eq!(vec.x, 0.0);
+        assert_eq!(vec.y, 0.0);
+        assert_eq!(vec.z, 0.0);
+    }
+
+    #[test]
+    fn test_set_vals() {
+        let mut vec = Vec3::empty();
+        vec.set_vals(1.0, 2.0, 3.0);
+        assert_eq!(vec.x, 1.0);
+        assert_eq!(vec.y, 2.0);
+        assert_eq!(vec.z, 3.0);
+    }
+
+    #[test]
+    fn test_set_vec() {
+        let vec_set = Vec3::new(1.0, 2.0, 3.0);
+        let mut vec = Vec3::empty();
+        vec.set_vec(vec_set);
+        assert_eq!(vec.x, 1.0);
+        assert_eq!(vec.y, 2.0);
+        assert_eq!(vec.z, 3.0);
     }
 }

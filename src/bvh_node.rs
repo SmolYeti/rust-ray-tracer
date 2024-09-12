@@ -1,6 +1,3 @@
-use std::cmp::Ordering;
-use std::rc::Rc;
-
 use crate::aabb::AABB;
 use crate::hittable::HitRecord;
 use crate::hittable::Hittable;
@@ -9,9 +6,12 @@ use crate::interval::Interval;
 use crate::ray::Ray3;
 use crate::rtweekend::random_u32_range;
 
+use std::cmp::Ordering;
+use std::sync::Arc;
+
 pub struct BVHNode {
-    left: Rc<dyn Hittable>,
-    right: Rc<dyn Hittable>,
+    left: Arc<dyn Hittable + Sync + Send>,
+    right: Arc<dyn Hittable + Sync + Send>,
     bbox: AABB,
 }
 
@@ -44,7 +44,11 @@ impl Hittable for BVHNode {
 }
 
 impl BVHNode {
-    pub fn from_vec(objects: &Vec<Rc<dyn Hittable>>, start: usize, end: usize) -> BVHNode {
+    pub fn from_vec(
+        objects: &Vec<Arc<dyn Hittable + Sync + Send>>,
+        start: usize,
+        end: usize,
+    ) -> BVHNode {
         let axis = random_u32_range(0, 2);
         let comparator = if axis == 0 {
             BVHNode::box_compare_x
@@ -55,13 +59,13 @@ impl BVHNode {
         };
 
         let span = end - start;
-        let mut left = Rc::clone(&objects[start]);
-        let mut right = Rc::clone(&objects[start]);
+        let mut left = Arc::clone(&objects[start]);
+        let mut right = Arc::clone(&objects[start]);
         if span == 2 {
             if comparator(&objects[start], &objects[start + 1]) {
-                right = Rc::clone(&objects[start + 1]);
+                right = Arc::clone(&objects[start + 1]);
             } else {
-                left = Rc::clone(&objects[start + 1]);
+                left = Arc::clone(&objects[start + 1]);
             }
         } else if span != 1 {
             let mut slice = objects[start..end].to_vec();
@@ -77,8 +81,8 @@ impl BVHNode {
             let end = slice.len();
             let mid = start + (span / 2);
 
-            left = Rc::new(BVHNode::from_vec(&slice, start, mid));
-            right = Rc::new(BVHNode::from_vec(&slice, mid, end));
+            left = Arc::new(BVHNode::from_vec(&slice, start, mid));
+            right = Arc::new(BVHNode::from_vec(&slice, mid, end));
         }
         let bbox = AABB::from_aabbs(&left.bounding_box().copy(), &right.bounding_box().copy());
         BVHNode { left, right, bbox }
@@ -88,19 +92,32 @@ impl BVHNode {
         BVHNode::from_vec(&list.objects, 0, list.objects.len())
     }
 
-    fn box_compare(left: &Rc<dyn Hittable>, right: &Rc<dyn Hittable>, axis: u32) -> bool {
+    fn box_compare(
+        left: &Arc<dyn Hittable + Sync + Send>,
+        right: &Arc<dyn Hittable + Sync + Send>,
+        axis: u32,
+    ) -> bool {
         left.bounding_box().axis(axis).min() < right.bounding_box().axis(axis).min()
     }
 
-    fn box_compare_x(left: &Rc<dyn Hittable>, right: &Rc<dyn Hittable>) -> bool {
+    fn box_compare_x(
+        left: &Arc<dyn Hittable + Sync + Send>,
+        right: &Arc<dyn Hittable + Sync + Send>,
+    ) -> bool {
         BVHNode::box_compare(left, right, 0)
     }
 
-    fn box_compare_y(left: &Rc<dyn Hittable>, right: &Rc<dyn Hittable>) -> bool {
+    fn box_compare_y(
+        left: &Arc<dyn Hittable + Sync + Send>,
+        right: &Arc<dyn Hittable + Sync + Send>,
+    ) -> bool {
         BVHNode::box_compare(left, right, 1)
     }
 
-    fn box_compare_z(left: &Rc<dyn Hittable>, right: &Rc<dyn Hittable>) -> bool {
+    fn box_compare_z(
+        left: &Arc<dyn Hittable + Sync + Send>,
+        right: &Arc<dyn Hittable + Sync + Send>,
+    ) -> bool {
         BVHNode::box_compare(left, right, 2)
     }
 }

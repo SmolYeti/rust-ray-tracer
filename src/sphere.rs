@@ -1,3 +1,4 @@
+use core::f64;
 use std::f64::consts::PI;
 use std::sync::Arc;
 
@@ -6,13 +7,14 @@ use crate::hittable::HitRecord;
 use crate::hittable::Hittable;
 use crate::interval::Interval;
 use crate::material::Material;
+use crate::orthonormal_basis::OrthonormalBasis;
 use crate::ray::Ray3;
 use crate::vector_3::Vec3;
 
 pub struct Sphere {
     center_start: Vec3,
     radius: f64,
-    mat: Arc<dyn Material>,
+    mat: Arc<dyn Material + Sync + Send>,
     b_moving: bool,
     center_move: Vec3,
     bbox: AABB,
@@ -59,10 +61,32 @@ impl Hittable for Sphere {
     fn bounding_box(&self) -> crate::aabb::AABB {
         AABB::copy(&self.bbox)
     }
+
+    fn pdf_value(&self, origin: &Vec3, direction: &Vec3) -> f64 {
+        // Only for stationary spheres
+        let mut record = HitRecord::new();
+
+        let ray = Ray3::new(*origin, *direction, 0.0);
+        if self.hit(&ray, Interval::new(0.001, f64::INFINITY), &mut record) {
+            let dist_sq = (self.center(0.0) - *origin).length_squared();
+            let cos_theta = f64::sqrt(1.0 - ((self.radius * self.radius) / dist_sq));
+            let solid_angle = 2.0 * PI * (1.0 - cos_theta);
+            1.0 / solid_angle
+        } else {
+            0.0
+        }
+    }
+
+    fn random(&self, origin: &Vec3) -> Vec3 {
+        let dir = self.center(0.0) - *origin;
+        let dist_sq = dir.length_squared();
+        let uvw = OrthonormalBasis::new(&dir);
+        uvw.transform(Sphere::random_to_sphere(self.radius, dist_sq))
+    }
 }
 
 impl Sphere {
-    pub fn new(center_start: Vec3, radius: f64, mat: Arc<dyn Material>) -> Sphere {
+    pub fn new(center_start: Vec3, radius: f64, mat: Arc<dyn Material + Sync + Send>) -> Sphere {
         let radius_vec = Vec3::new(radius, radius, radius);
         Sphere {
             center_start,
@@ -77,7 +101,7 @@ impl Sphere {
     pub fn new_moving(
         center_start: Vec3,
         radius: f64,
-        mat: Arc<dyn Material>,
+        mat: Arc<dyn Material + Sync + Send>,
         center_end: Vec3,
     ) -> Sphere {
         let radius_vec = Vec3::new(radius, radius, radius);
@@ -103,5 +127,18 @@ impl Sphere {
 
         *u = phi / (2.0 * PI);
         *v = theta / PI;
+    }
+
+    pub fn random_to_sphere(radius: f64, dist_sq: f64) -> Vec3 {
+        let r1 = rand::random::<f64>();
+        let r2 = rand::random::<f64>();
+        let z = 1.0 + r2 * (f64::sqrt(1.0 - ((radius * radius) / dist_sq)) - 1.0);
+
+        let z_sqrt = f64::sqrt(1.0 - (z * z));
+        let phi = 2.0 * PI * r1;
+        let x = f64::cos(phi) * z_sqrt;
+        let y = f64::sin(phi) * z_sqrt;
+
+        Vec3::new(x, y, z)
     }
 }

@@ -8,12 +8,11 @@ use crate::ray::Ray3;
 //use crate::texture::Texture;
 use crate::vector_3::Vec3;
 use std::f64::INFINITY;
-use std::rc::Rc;
 use std::sync::Arc;
 
 pub struct ConstantMedium {
-    boundary: Rc<dyn Hittable>,
-    phase_func: Arc<dyn Material>,
+    boundary: Arc<dyn Hittable + Sync + Send>,
+    phase_func: Arc<dyn Material + Sync + Send>,
     neg_inv_density: f64,
 }
 
@@ -82,7 +81,11 @@ impl ConstantMedium {
     //     }
     // }
 
-    pub fn color(boundary: Rc<dyn Hittable>, density: f64, color: Vec3) -> ConstantMedium {
+    pub fn color(
+        boundary: Arc<dyn Hittable + Sync + Send>,
+        density: f64,
+        color: Vec3,
+    ) -> ConstantMedium {
         ConstantMedium {
             boundary,
             phase_func: Arc::new(Isotropic::color(color)),
