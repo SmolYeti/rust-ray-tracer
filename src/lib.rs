@@ -1,5 +1,7 @@
+use image::RgbImage;
 use softbuffer;
 use std::num::NonZeroU32;
+use std::path::Path;
 use std::rc::Rc;
 use winit::dpi::{PhysicalSize, Size};
 use winit::event::{Event, WindowEvent};
@@ -59,4 +61,37 @@ pub fn render_buffer(buffer: Vec<u32>, buffer_width: u32, buffer_height: u32) {
             }
         })
         .unwrap();
+}
+
+pub fn save_image(name: &str, buffer: &Vec<u32>, width: u32, height: u32, samples: i32, depth: i32) {
+    // Load the buffer into an image
+    let image = RgbImage::from_fn(width, height, |x, y| {
+        let index = x + (y * width);
+        let value = buffer[index as usize];
+        let red = ((value >> 16) & 0x000000FF) as u8;
+        let green = ((value >> 8) & 0x000000FF) as u8;
+        let blue = (value & 0x000000FF) as u8;
+        image::Rgb([red, green, blue])
+    });
+
+    let _ = std::fs::create_dir("renders");  
+
+    let mut full_path = "renders/".to_owned();
+    let path_end = ".png";
+
+    // Add the file name
+    full_path.push_str(name);
+
+    // width, samples, depth
+    full_path.push_str("_w");
+    full_path.push_str(width.to_string().as_str());
+    full_path.push_str("_s");
+    full_path.push_str(samples.to_string().as_str());
+    full_path.push_str("_d");
+    full_path.push_str(depth.to_string().as_str());
+
+    full_path.push_str(path_end);
+    println!("Full Path: {}", &full_path);
+    let path = Path::new(&full_path);
+    let _ = image.save(path);
 }
