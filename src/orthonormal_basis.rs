@@ -35,3 +35,17 @@ impl OrthonormalBasis {
         point.x * self.axis[0] + point.y * self.axis[1] + point.z * self.axis[2]
     }
 }
+
+#[cfg(test)]
+mod tests {
+    use super::*;
+
+    #[test]
+    fn x_normal() {
+        let normal = Vec3::new(1.0, 0.0, 0.0);
+        let result = OrthonormalBasis::new(&normal);
+        assert!((result.u().y + 1.0).abs() < f64::EPSILON);
+        assert!((result.v().z - 1.0).abs() < f64::EPSILON);
+        assert!((result.w().x - 1.0).abs() < f64::EPSILON);
+    }
+}

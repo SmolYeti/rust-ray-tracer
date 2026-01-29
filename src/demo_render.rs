@@ -15,13 +15,12 @@ use crate::noise_texture::NoiseTexture;
 use crate::quad::quad_box;
 use crate::quad::Quad;
 use crate::rtweekend::random_f64_range;
+use crate::save_show::render_buffer;
+use crate::save_show::save_image;
 use crate::sphere::Sphere;
 use crate::texture::Texture;
 use crate::vector_3::Vec3;
-use ray_tracing::render_buffer;
-use ray_tracing::save_image;
 use std::sync::Arc;
-use std::fs;
 
 pub fn final_render_book1(width: i32, samples: i32, depth: i32, show: bool, save: bool) {
     // World
