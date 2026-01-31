@@ -6,7 +6,11 @@ So far this is the implementation of books 1, 2, & 3 of [*Ray Tracing: In One We
 I also have added multi-threading & saving of PNGs through the libraries [**scoped_threadpool**](https://crates.io/crates/scoped_threadpool) and [**softbuffer**](https://github.com/rust-windowing/softbuffer).
 
 Plans for this repo are:
-- Implement ray tracing (similar to that of books 1-3 of the [*Ray Tracing: In One Weekend*](https://raytracing.github.io/) series) on the GPU
+
+- Copy over NURBS Library from Glacier Engine
+- Implement ray tracing (similar to that of books 1-3 of the [*Ray Tracing: In One Weekend*](https://raytracing.github.io/) series) on the GPU (Vulkan)
+- Implement PBR
+- Add support for ray tracing NURBS on CPU
 - Add more geometry types
 
 Note:
