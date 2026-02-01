@@ -480,6 +480,7 @@ impl<'a> ops::Div<&'a Vec3> for f64 {
         }
     }
 }
+
 #[cfg(test)]
 mod tests {
     use crate::vector_3::Vec3;
