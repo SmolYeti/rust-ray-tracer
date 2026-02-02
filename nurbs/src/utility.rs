@@ -11,3 +11,11 @@ pub fn random_f64_range(min: f64, max: f64) -> f64 {
 pub fn random_u32_range(min: u32, max: u32) -> u32 {
     (random_f64_range(min as f64, (max + 1) as f64)) as u32
 }
+
+pub fn f64_equal(a: f64, b: f64) -> bool {
+    (a - b).abs() < f64::EPSILON
+}
+
+pub fn f64_near(a: f64, b: f64, epsilon: f64) -> bool {
+    (a - b).abs() < epsilon
+}
