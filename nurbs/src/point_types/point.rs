@@ -214,6 +214,23 @@ impl<'a, const N: usize> ops::Sub<&'a Point<N>> for f64 {
     }
 }
 
+// Subtract Assign
+impl<const N: usize> ops::SubAssign<Self> for Point<N> {
+    fn sub_assign(&mut self, rhs: Self) {
+        for n in 0..N {
+            self.values[n] -= rhs.values[n];
+        }
+    }
+}
+
+impl<const N: usize> ops::SubAssign<f64> for Point<N> {
+    fn sub_assign(&mut self, rhs: f64) {
+        for n in 0..N {
+            self.values[n] -= rhs;
+        }
+    }
+}
+
 // Multiply
 impl<const N: usize> ops::Mul<Self> for Point<N> {
     type Output = Point<N>;
