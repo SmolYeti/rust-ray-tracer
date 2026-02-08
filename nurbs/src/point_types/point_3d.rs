@@ -17,7 +17,10 @@ impl Point3D {
 #[cfg(test)]
 mod tests {
     use crate::point_types::Point3D;
+    use crate::utility::f64_equal;
+    use crate::utility::f64_near;
 
+    // Construct
     #[test]
     fn test_new() {
         let point = Point3D::new([1.0, 2.0, 3.0]);
@@ -32,5 +35,179 @@ mod tests {
         assert_eq!(point.x(), 0.0);
         assert_eq!(point.y(), 0.0);
         assert_eq!(point.z(), 0.0);
+    }
+
+    // Dot
+    #[test]
+    fn test_dot() {
+        let point_0 = Point3D::new([1.0, 1.5, 2.0]);
+        let point_1 = Point3D::new([0.4, 3.0, 1.2]);
+        let test_val = point_0.dot(point_1);
+        // 0.4 + 4.5 + 2.4 + 10.0 = 4.9 + 12.4 = 17.3
+        assert!(f64_near(test_val, 7.3, f64::EPSILON * 10.0), "Value was: {}", test_val);
+    }
+
+    // Addition
+    #[test]
+    fn test_add_point_f64() {
+        let point = Point3D::new([0.3, 1.1, 4.4]);
+        let val = 2.0;
+        let test_point = point + val;
+        assert!(f64_equal(test_point.x(), 2.3));
+        assert!(f64_equal(test_point.y(), 3.1));
+        assert!(f64_equal(test_point.z(), 6.4));
+    }
+
+    #[test]
+    fn test_add_f64_point() {
+        let point = Point3D::new([0.3, 1.1, 4.4]);
+        let val = 2.0;
+        let test_point = val + point;
+        assert!(f64_equal(test_point.x(), 2.3));
+        assert!(f64_equal(test_point.y(), 3.1));
+        assert!(f64_equal(test_point.z(), 6.4));
+    }
+
+    #[test]
+    fn test_add_point() {
+        let point_0 = Point3D::new([0.3, 1.1, 2.5]);
+        let point_1 = Point3D::new([0.4, 5.2, 1.2]);
+        let test_point = point_0 + point_1;
+        assert!(f64_equal(test_point.x(), 0.7), "Value was: {}", test_point.x());
+        assert!(f64_near(test_point.y(), 6.3, f64::EPSILON * 10.0), "Value was: {}", test_point.y());
+        assert!(f64_equal(test_point.z(), 3.7), "Value was: {}", test_point.z());
+    }
+
+    #[test]
+    fn test_add_equals_f64() {
+        let mut point = Point3D::new([0.3, 1.1, 4.4]);
+        let val = 2.0;
+        point += val;
+        assert!(f64_equal(point.x(), 2.3));
+        assert!(f64_equal(point.y(), 3.1));
+        assert!(f64_equal(point.z(), 6.4));
+    }
+    
+    #[test]
+    fn test_add_equals_point() {
+        let mut test_point = Point3D::new([0.3, 1.1, 2.5]);
+        let point_1 = Point3D::new([0.4, 5.2, 1.2]);
+        test_point += point_1;
+        assert!(f64_equal(test_point.x(), 0.7), "Value was: {}", test_point.x());
+        assert!(f64_near(test_point.y(), 6.3, f64::EPSILON * 10.0), "Value was: {}", test_point.y());
+        assert!(f64_equal(test_point.z(), 3.7), "Value was: {}", test_point.z());
+    }
+
+    // Subtraction
+    #[test]
+    fn test_sub_point_f64() {
+        let point = Point3D::new([0.3, 1.1, 4.4]);
+        let val = 2.0;
+        let test_point = point - val;
+        assert!(f64_equal(test_point.x(), -1.7), "Value was: {}", test_point.x());
+        assert!(f64_equal(test_point.y(), -0.9), "Value was: {}", test_point.y());
+        assert!(f64_near(test_point.z(), 2.4, f64::EPSILON * 10.0), "Value was: {}", test_point.z());
+    }
+
+    #[test]
+    fn test_sub_f64_point() {
+        let point = Point3D::new([0.3, 1.1, 4.4]);
+        let val = 2.0;
+        let test_point = val - point;
+        assert!(f64_equal(test_point.x(), 1.7), "Value was: {}", test_point.x());
+        assert!(f64_equal(test_point.y(), 0.9), "Value was: {}", test_point.y());
+        assert!(f64_near(test_point.z(), -2.4, f64::EPSILON * 10.0), "Value was: {}", test_point.z());
+    }
+
+    #[test]
+    fn test_sub_point() {
+        let point_0 = Point3D::new([0.3, 1.1, 2.5]);
+        let point_1 = Point3D::new([0.4, 5.2, 1.2]);
+        let test_point = point_0 - point_1;
+        assert!(f64_equal(test_point.x(), -0.1), "Value was: {}", test_point.x());
+        assert!(f64_equal(test_point.y(), -4.1), "Value was: {}", test_point.y());
+        assert!(f64_equal(test_point.z(), 1.3), "Value was: {}", test_point.z());
+    }
+
+    #[test]
+    fn test_sub_equals_f64() {
+        let mut test_point = Point3D::new([0.3, 1.1, 4.4]);
+        let val = 2.0;
+        test_point -= val;
+        assert!(f64_equal(test_point.x(), -1.7), "Value was: {}", test_point.x());
+        assert!(f64_equal(test_point.y(), -0.9), "Value was: {}", test_point.y());
+        assert!(f64_near(test_point.z(), 2.4, f64::EPSILON * 10.0), "Value was: {}", test_point.z());
+    }
+
+    #[test]
+    fn test_sub_equals_point() {
+        let mut test_point = Point3D::new([0.3, 1.1, 2.5]);
+        let point = Point3D::new([0.4, 5.2, 1.2]);
+        test_point -= point;
+        assert!(f64_equal(test_point.x(), -0.1), "Value was: {}", test_point.x());
+        assert!(f64_equal(test_point.y(), -4.1), "Value was: {}", test_point.y());
+        assert!(f64_equal(test_point.z(), 1.3), "Value was: {}", test_point.z());
+    }
+
+    // Multiplication
+    #[test]
+    fn test_mul_point_f64() {
+        let point = Point3D::new([0.3, 1.1, 4.4]);
+        let val = 2.0;
+        let test_point = point * val;
+        assert!(f64_equal(test_point.x(), 0.6), "Value was: {}", test_point.x());
+        assert!(f64_equal(test_point.y(), 2.2), "Value was: {}", test_point.y());
+        assert!(f64_equal(test_point.z(), 8.8), "Value was: {}", test_point.z());
+    }
+    
+    #[test]
+    fn test_mul_f64_point() {
+        let point = Point3D::new([0.3, 1.1, 4.4]);
+        let val = 2.0;
+        let test_point = val * point;
+        assert!(f64_equal(test_point.x(), 0.6), "Value was: {}", test_point.x());
+        assert!(f64_equal(test_point.y(), 2.2), "Value was: {}", test_point.y());
+        assert!(f64_equal(test_point.z(), 8.8), "Value was: {}", test_point.z());
+    }
+
+    #[test]
+    fn test_mul_equals_f64() {
+        let mut test_point = Point3D::new([0.3, 1.1, 4.4]);
+        let val = 2.0;
+        test_point *= val;
+        assert!(f64_equal(test_point.x(), 0.6), "Value was: {}", test_point.x());
+        assert!(f64_equal(test_point.y(), 2.2), "Value was: {}", test_point.y());
+        assert!(f64_equal(test_point.z(), 8.8), "Value was: {}", test_point.z());
+    }
+
+    // Division
+    #[test]
+    fn test_div_point_f64() {
+        let point = Point3D::new([0.3, 1.1, 4.4]);
+        let val = 2.0;
+        let test_point = point / val;
+        assert!(f64_equal(test_point.x(), 0.15), "Value was: {}", test_point.x());
+        assert!(f64_equal(test_point.y(), 0.55), "Value was: {}", test_point.y());
+        assert!(f64_equal(test_point.z(), 2.2), "Value was: {}", test_point.z());
+    }
+    
+    #[test]
+    fn test_div_f64_point() {
+        let point = Point3D::new([2.0, 4.0, 8.0]);
+        let val = 2.0;
+        let test_point = val / point;
+        assert!(f64_equal(test_point.x(), 1.0), "Value was: {}", test_point.x());
+        assert!(f64_equal(test_point.y(), 0.5), "Value was: {}", test_point.y());
+        assert!(f64_equal(test_point.z(), 0.25), "Value was: {}", test_point.z());
+    }
+
+    #[test]
+    fn test_div_equals_f64() {
+        let mut test_point = Point3D::new([0.3, 1.1, 4.4]);
+        let val = 2.0;
+        test_point /= val;
+        assert!(f64_equal(test_point.x(), 0.15), "Value was: {}", test_point.x());
+        assert!(f64_equal(test_point.y(), 0.55), "Value was: {}", test_point.y());
+        assert!(f64_equal(test_point.z(), 2.2), "Value was: {}", test_point.z());
     }
 }

@@ -9,6 +9,14 @@ impl<const N: usize> Point<N> {
     pub fn empty() -> Point<N> {
         Point::new([0.0; N])
     }
+
+    pub fn dot(self, point: Point<N>) -> f64 {
+        let mut sum: f64 = 0.0;
+        for n in 0..N {
+            sum += self.values[n] * point.values[n];
+        }
+        sum
+    }
 }
 
 // Negate
@@ -310,6 +318,15 @@ impl<'a, const N: usize> ops::Mul<&'a Point<N>> for f64 {
     }
 }
 
+// Multiply Assign
+impl<const N: usize> ops::MulAssign<f64> for Point<N> {
+    fn mul_assign(&mut self, rhs: f64) {
+        for n in 0..N {
+            self.values[n] *= rhs;
+        }
+    }
+}
+
 // Divide
 impl<const N: usize> ops::Div<Point<N>> for Point<N> {
     type Output = Self;
@@ -386,5 +403,14 @@ impl<'a, const N: usize> ops::Div<&'a Point<N>> for f64 {
         }
 
         Point { values }
+    }
+}
+
+// Divide Assign
+impl<const N: usize> ops::DivAssign<f64> for Point<N> {
+    fn div_assign(&mut self, rhs: f64) {
+        for n in 0..N {
+            self.values[n] /= rhs;
+        }
     }
 }
