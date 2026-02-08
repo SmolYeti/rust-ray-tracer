@@ -1,15 +1,15 @@
 use crate::point_types::Point3D;
 
 impl Point3D {
-    pub fn x(self) -> f64 {
+    pub fn x(&self) -> f64 {
         self.values[0]
     }
     
-    pub fn y(self) -> f64 {
+    pub fn y(&self) -> f64 {
         self.values[1]
     }
 
-    pub fn z(self) -> f64 {
+    pub fn z(&self) -> f64 {
         self.values[2]
     }
 }

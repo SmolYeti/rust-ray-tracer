@@ -10,7 +10,7 @@ impl<const N: usize> Point<N> {
         Point::new([0.0; N])
     }
 
-    pub fn dot(self, point: Point<N>) -> f64 {
+    pub fn dot(&self, point: Point<N>) -> f64 {
         let mut sum: f64 = 0.0;
         for n in 0..N {
             sum += self.values[n] * point.values[n];

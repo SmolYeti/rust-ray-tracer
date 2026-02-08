@@ -1,19 +1,19 @@
 use crate::point_types::Point2D;
 
 impl Point2D {
-    pub fn x(self) -> f64 {
+    pub fn x(&self) -> f64 {
         self.values[0]
     }
     
-    pub fn y(self) -> f64 {
+    pub fn y(&self) -> f64 {
         self.values[1]
     }
 
-    pub fn u(self) -> f64 {
+    pub fn u(&self) -> f64 {
         self.values[0]
     }
     
-    pub fn v(self) -> f64 {
+    pub fn v(&self) -> f64 {
         self.values[1]
     }
 }
