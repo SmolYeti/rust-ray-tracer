@@ -1,7 +1,7 @@
 use crate::point_types::Point2D;
 
 #[derive(Debug, Clone, Copy)]
-pub struct Interval<const N: usize> {
+pub struct Interval {
     pub range: Point2D,
     pub interval_div: f64,
 }
@@ -25,12 +25,12 @@ impl Interval {
     }
 
     pub fn clamp_value(&self, value: f64) -> f64 {
-        let mut return_val = self.value;
-        if (return_val < self.range.x()) {
+        let mut return_val = value;
+        if return_val < self.range.x() {
             return_val = self.range.x();
         }
-        if (return_val > self.range.y()) {
-            return_val = self.range.y()
+        if return_val > self.range.y() {
+            return_val = self.range.y();
         }
         return_val
     }
@@ -38,5 +38,53 @@ impl Interval {
     pub fn localize_clamp_value(&self, value: f64) -> f64 {
         let clamped = self.clamp_value(value);
         (clamped - self.range.x()) * self.interval_div
+    }
+}
+
+#[cfg(test)]
+mod tests {
+    use crate::interval::Interval;
+    use crate::point_types::Point2D;
+    use crate::utility::f64_equal;
+
+    // Construct
+    #[test]
+    fn test_new() {
+        let interval = Interval::new(Point2D::new([1.0, 2.0]));
+        assert!(interval.is_valid());
+        assert!(f64_equal(interval.range.x(), 1.0));
+        assert!(f64_equal(interval.range.y(), 2.0));
+        assert!(f64_equal(interval.range.u(), 1.0));
+        assert!(f64_equal(interval.range.v(), 2.0));
+    }
+    
+    #[test]
+    fn test_empty() {
+        let interval = Interval::empty();
+        assert!(!interval.is_valid());
+    }
+
+    #[test]
+    fn test_clamp() {
+        let interval = Interval::new(Point2D::new([0.0, 1.0]));
+        let less = interval.clamp_value(-1.0);
+        let mid = interval.clamp_value(0.5);
+        let more = interval.clamp_value(2.0);
+        
+        assert!(f64_equal(less, 0.0));
+        assert!(f64_equal(mid, 0.5));
+        assert!(f64_equal(more, 1.0));
+    }
+
+    #[test]
+    fn test_localize_clamp() {
+        let interval = Interval::new(Point2D::new([0.0, 10.0]));
+        let less = interval.localize_clamp_value(-1.0);
+        let mid = interval.localize_clamp_value(5.0);
+        let more = interval.localize_clamp_value(11.0);
+        
+        assert!(f64_equal(less, 0.0), "Value was: {}", less);
+        assert!(f64_equal(mid, 0.5), "Value was: {}", mid);
+        assert!(f64_equal(more, 1.0), "Value was: {}", more);
     }
 }

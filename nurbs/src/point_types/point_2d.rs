@@ -28,19 +28,19 @@ mod tests {
     #[test]
     fn test_new() {
         let point = Point2D::new([1.0, 2.0]);
-        assert_eq!(point.x(), 1.0);
-        assert_eq!(point.y(), 2.0);
-        assert_eq!(point.u(), 1.0);
-        assert_eq!(point.v(), 2.0);
+        assert!(f64_equal(point.x(), 1.0));
+        assert!(f64_equal(point.y(), 2.0));
+        assert!(f64_equal(point.u(), 1.0));
+        assert!(f64_equal(point.v(), 2.0));
     }
 
     #[test]
     fn test_empty() {
         let point = Point2D::empty();
-        assert_eq!(point.x(), 0.0);
-        assert_eq!(point.y(), 0.0);
-        assert_eq!(point.u(), 0.0);
-        assert_eq!(point.v(), 0.0);
+        assert!(f64_equal(point.x(), 0.0));
+        assert!(f64_equal(point.y(), 0.0));
+        assert!(f64_equal(point.u(), 0.0));
+        assert!(f64_equal(point.v(), 0.0));
     }
 
     // Dot
@@ -49,7 +49,6 @@ mod tests {
         let point_0 = Point2D::new([1.0, 1.5]);
         let point_1 = Point2D::new([0.4, 3.0]);
         let test_val = point_0.dot(point_1);
-        // 0.4 + 4.5 + 2.4 + 10.0 = 4.9 + 12.4 = 17.3
         assert!(f64_equal(test_val, 4.9), "Value was: {}", test_val);
     }
 

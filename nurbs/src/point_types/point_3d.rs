@@ -24,17 +24,17 @@ mod tests {
     #[test]
     fn test_new() {
         let point = Point3D::new([1.0, 2.0, 3.0]);
-        assert_eq!(point.x(), 1.0);
-        assert_eq!(point.y(), 2.0);
-        assert_eq!(point.z(), 3.0);
+        assert!(f64_equal(point.x(), 1.0));
+        assert!(f64_equal(point.y(), 2.0));
+        assert!(f64_equal(point.z(), 3.0));
     }
 
     #[test]
     fn test_empty() {
         let point = Point3D::empty();
-        assert_eq!(point.x(), 0.0);
-        assert_eq!(point.y(), 0.0);
-        assert_eq!(point.z(), 0.0);
+        assert!(f64_equal(point.x(), 0.0));
+        assert!(f64_equal(point.y(), 0.0));
+        assert!(f64_equal(point.z(), 0.0));
     }
 
     // Dot
@@ -43,7 +43,6 @@ mod tests {
         let point_0 = Point3D::new([1.0, 1.5, 2.0]);
         let point_1 = Point3D::new([0.4, 3.0, 1.2]);
         let test_val = point_0.dot(point_1);
-        // 0.4 + 4.5 + 2.4 + 10.0 = 4.9 + 12.4 = 17.3
         assert!(f64_near(test_val, 7.3, f64::EPSILON * 10.0), "Value was: {}", test_val);
     }
 
