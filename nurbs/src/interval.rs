@@ -2,8 +2,8 @@ use crate::point_types::Point2D;
 
 #[derive(Debug, Clone, Copy)]
 pub struct Interval {
-    pub range: Point2D,
-    pub interval_div: f64,
+    range: Point2D,
+    interval_div: f64,
 }
 
 
@@ -18,6 +18,14 @@ impl Interval {
 
     pub fn empty() -> Interval {
         Interval::new(Point2D::new([1.0, -1.0]))
+    }
+
+    pub fn min(&self) -> f64 {
+        self.range.x()
+    }
+
+    pub fn max(&self) -> f64 {
+        self.range.y()
     }
 
     pub fn is_valid(&self) -> bool {
@@ -52,10 +60,8 @@ mod tests {
     fn test_new() {
         let interval = Interval::new(Point2D::new([1.0, 2.0]));
         assert!(interval.is_valid());
-        assert!(f64_equal(interval.range.x(), 1.0));
-        assert!(f64_equal(interval.range.y(), 2.0));
-        assert!(f64_equal(interval.range.u(), 1.0));
-        assert!(f64_equal(interval.range.v(), 2.0));
+        assert!(f64_equal(interval.min(), 1.0));
+        assert!(f64_equal(interval.max(), 2.0));
     }
     
     #[test]

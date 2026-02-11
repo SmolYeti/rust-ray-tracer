@@ -10,9 +10,9 @@ pub trait Curve2D {
     fn evaluate_points(&self, point_count: usize) -> Vec<Point2D> {
         let mut points = Vec::<Point2D>::with_capacity(point_count); 
 
-        let div = (self.interval().range.y() - self.interval().range.x()) / ((point_count - 1) as f64);
+        let div = (self.interval().max() - self.interval().min()) / ((point_count - 1) as f64);
         for n in 0..point_count {
-            let parameter = self.interval().range.x() + (n as f64 * div);
+            let parameter = self.interval().min() + (n as f64 * div);
             points.push(self.evaluate(parameter));
         }
         points
@@ -27,9 +27,9 @@ pub trait Curve3D {
     fn evaluate_points(&self, point_count: usize) -> Vec<Point3D> {
         let mut points = Vec::<Point3D>::with_capacity(point_count); 
 
-        let div = (self.interval().range.y() - self.interval().range.x()) / ((point_count - 1) as f64);
+        let div = (self.interval().max() - self.interval().min()) / ((point_count - 1) as f64);
         for n in 0..point_count {
-            let parameter = self.interval().range.x() + (n as f64 * div);
+            let parameter = self.interval().min() + (n as f64 * div);
             points.push(self.evaluate(parameter));
         }
         points
@@ -92,8 +92,8 @@ mod tests {
         let curve = ImplCurve2D::new(Interval::new(Point2D::new([1.0, 2.0])));
 
         let interval = curve.interval();
-        assert!(f64_equal(interval.range.x(), 1.0));
-        assert!(f64_equal(interval.range.y(), 2.0));
+        assert!(f64_equal(interval.min(), 1.0));
+        assert!(f64_equal(interval.max(), 2.0));
 
         let eval = curve.evaluate(1.2);
         assert!(f64_equal(eval.x(), 1.2));
@@ -114,8 +114,8 @@ mod tests {
         let curve = ImplCurve3D::new(Interval::new(Point2D::new([1.0, 2.0])));
 
         let interval = curve.interval();
-        assert!(f64_equal(interval.range.x(), 1.0));
-        assert!(f64_equal(interval.range.y(), 2.0));
+        assert!(f64_equal(interval.min(), 1.0));
+        assert!(f64_equal(interval.max(), 2.0));
 
         let eval = curve.evaluate(1.2);
         assert!(f64_equal(eval.x(), 1.2));

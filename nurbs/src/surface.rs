@@ -8,24 +8,19 @@ pub trait Surface {
 
     fn evaluate(&self, uv: Point2D) -> Point3D;
 
-    fn evaluate_points(&self, u_sample_count: u32, v_sample_count: u32) -> vec<Point3D> {
-        let points = vec<Point3D>::with_capacity(u_sample_count * v_sample_count);
+    fn evaluate_points(&self, u_sample_count: usize, v_sample_count: usize) -> Vec<Point3D> {
+        let mut points = Vec::<Point3D>::with_capacity(u_sample_count * v_sample_count);
+        let u_div = (self.interval_u().max() - self.interval_u().min()) / ((u_sample_count as f64) - 1.0);
+        let v_div = (self.interval_v().max() - self.interval_v().min()) / ((u_sample_count as f64) - 1.0);
+
+        for i in 0..u_sample_count {
+          let u = self.interval_u().min() + (i as f64 * u_div);
+          for j in 0..v_sample_count {
+            let v = self.interval_v().min() + (j as f64 * v_div);
+            points.push(self.evaluate(Point2D::new([u, v])));
+          }
+        }
+
         points
     }
-    /*virtual std::vector<Point3D> EvaluatePoints(uint32_t u_sample_count,
-                                              uint32_t v_sample_count) const {
-    std::vector<Point3D> points(u_sample_count * v_sample_count);
-    double u_div = (u_interval_.y - u_interval_.x) /
-                   static_cast<double>(u_sample_count - 1);
-    double v_div = (v_interval_.y - v_interval_.x) /
-                   static_cast<double>(v_sample_count - 1);
-    for (uint32_t i = 0; i < u_sample_count; ++i) {
-      Point2D uv = {u_interval_.x + static_cast<double>(i) * u_div, 0};
-      for (uint32_t j = 0; j < v_sample_count; ++j) {
-        uv.y = v_interval_.x + static_cast<double>(j) * v_div;
-        points[(i * v_sample_count) + j] = EvaluatePoint(uv);
-      }
-    }
-    return points;
-  }*/
 }
