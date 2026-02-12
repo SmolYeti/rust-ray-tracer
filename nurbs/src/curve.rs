@@ -3,7 +3,7 @@ use crate::point_types::Point2D;
 use crate::point_types::Point3D;
 
 pub trait Curve2D {
-    fn interval(&self) -> Interval;
+    fn interval(&self) -> &Interval;
 
     fn evaluate(&self, parameter: f64) -> Point2D;
 
@@ -20,7 +20,7 @@ pub trait Curve2D {
 }
 
 pub trait Curve3D {
-    fn interval(&self) -> Interval;
+    fn interval(&self) -> &Interval;
 
     fn evaluate(&self, parameter: f64) -> Point3D;
 
@@ -50,8 +50,8 @@ mod tests {
     }
 
     impl Curve2D for ImplCurve2D {
-        fn interval(&self) -> Interval {
-            self.curve_interval
+        fn interval(&self) -> &Interval {
+            &self.curve_interval
         }
 
         fn evaluate(&self, parameter: f64) -> Point2D {
@@ -71,8 +71,8 @@ mod tests {
     }
 
     impl Curve3D for ImplCurve3D {
-        fn interval(&self) -> Interval {
-            self.curve_interval
+        fn interval(&self) -> &Interval {
+            &self.curve_interval
         }
 
         fn evaluate(&self, parameter: f64) -> Point3D {

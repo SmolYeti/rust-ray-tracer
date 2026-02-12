@@ -10,7 +10,7 @@ Plans for this repo are:
 - Copy over NURBS Library from Glacier Engine
 - Implement ray tracing (similar to that of books 1-3 of the [*Ray Tracing: In One Weekend*](https://raytracing.github.io/) series) on the GPU (Vulkan)
 - Implement PBR
-- Add support for ray tracing NURBS on CPU
+- Add support for ray tracing NURBS on CPU & GPU
 - Add more geometry types
 
 Note:
