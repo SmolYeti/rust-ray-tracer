@@ -1,6 +1,7 @@
 use crate::point_types::Point2D;
 
 impl Point2D {
+    // Getters
     pub fn x(&self) -> f64 {
         self.values[0]
     }
@@ -15,6 +16,23 @@ impl Point2D {
     
     pub fn v(&self) -> f64 {
         self.values[1]
+    }
+    
+    // Mutable Getters
+    pub fn mut_x(&mut self) -> &mut f64 {
+        &mut self.values[0]
+    }
+    
+    pub fn mut_y(&mut self) -> &mut f64 {
+        &mut self.values[1]
+    }
+    
+    pub fn mut_u(&mut self) -> &mut f64 {
+        &mut self.values[0]
+    }
+    
+    pub fn mut_v(&mut self) -> &mut f64 {
+        &mut self.values[1]
     }
 }
 
@@ -41,6 +59,24 @@ mod tests {
         assert!(f64_equal(point.y(), 0.0));
         assert!(f64_equal(point.u(), 0.0));
         assert!(f64_equal(point.v(), 0.0));
+    }
+
+    // Access Add
+    #[test]
+    fn test_add_var() {
+        let mut point = Point2D::empty();
+        *point.mut_x() = 1.0;
+        *point.mut_y() = 2.0;
+        assert!(f64_equal(point.x(), 1.0));
+        assert!(f64_equal(point.y(), 2.0));
+        assert!(f64_equal(point.u(), 1.0));
+        assert!(f64_equal(point.v(), 2.0));
+        *point.mut_u() += 1.0;
+        *point.mut_v() += 2.0;
+        assert!(f64_equal(point.x(), 2.0));
+        assert!(f64_equal(point.y(), 4.0));
+        assert!(f64_equal(point.u(), 2.0));
+        assert!(f64_equal(point.v(), 4.0));
     }
 
     // Dot

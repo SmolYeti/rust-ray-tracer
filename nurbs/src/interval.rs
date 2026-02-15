@@ -6,14 +6,16 @@ pub struct Interval {
     interval_div: f64,
 }
 
-
 impl Interval {
-    pub fn new(range: Point2D) -> Interval{
+    pub fn new(range: Point2D) -> Interval {
         let mut span = range.y() - range.x();
         if span.abs() < f64::EPSILON {
             span = -1.0
         }
-        Interval { range, interval_div : (1.0 / span)}
+        Interval {
+            range,
+            interval_div: (1.0 / span),
+        }
     }
 
     pub fn empty() -> Interval {
@@ -34,11 +36,11 @@ impl Interval {
 
     pub fn clamp_value(&self, value: f64) -> f64 {
         let mut return_val = value;
-        if return_val < self.range.x() {
-            return_val = self.range.x();
+        if return_val < self.min() {
+            return_val = self.min();
         }
-        if return_val > self.range.y() {
-            return_val = self.range.y();
+        if return_val > self.max() {
+            return_val = self.max();
         }
         return_val
     }
@@ -63,7 +65,7 @@ mod tests {
         assert!(f64_equal(interval.min(), 1.0));
         assert!(f64_equal(interval.max(), 2.0));
     }
-    
+
     #[test]
     fn test_empty() {
         let interval = Interval::empty();
@@ -76,7 +78,7 @@ mod tests {
         let less = interval.clamp_value(-1.0);
         let mid = interval.clamp_value(0.5);
         let more = interval.clamp_value(2.0);
-        
+
         assert!(f64_equal(less, 0.0));
         assert!(f64_equal(mid, 0.5));
         assert!(f64_equal(more, 1.0));
@@ -88,7 +90,7 @@ mod tests {
         let less = interval.localize_clamp_value(-1.0);
         let mid = interval.localize_clamp_value(5.0);
         let more = interval.localize_clamp_value(11.0);
-        
+
         assert!(f64_equal(less, 0.0), "Value was: {}", less);
         assert!(f64_equal(mid, 0.5), "Value was: {}", mid);
         assert!(f64_equal(more, 1.0), "Value was: {}", more);

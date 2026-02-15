@@ -1,6 +1,6 @@
 #[derive(Debug, Clone, Copy)]
 pub struct Point<const N: usize> {
-    pub values: [f64; N],
+    values: [f64; N],
 }
 
 pub type Point2D = Point<2>;

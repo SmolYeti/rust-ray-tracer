@@ -1,16 +1,30 @@
 use crate::point_types::Point3D;
 
 impl Point3D {
+    // Getters
     pub fn x(&self) -> f64 {
         self.values[0]
     }
-    
+
     pub fn y(&self) -> f64 {
         self.values[1]
     }
 
     pub fn z(&self) -> f64 {
         self.values[2]
+    }
+
+    // Mutable Getters
+    pub fn mut_x(&mut self) -> &mut f64 {
+        &mut self.values[0]
+    }
+
+    pub fn mut_y(&mut self) -> &mut f64 {
+        &mut self.values[1]
+    }
+
+    pub fn mut_z(&mut self) -> &mut f64 {
+        &mut self.values[2]
     }
 }
 
@@ -35,6 +49,18 @@ mod tests {
         assert!(f64_equal(point.x(), 0.0));
         assert!(f64_equal(point.y(), 0.0));
         assert!(f64_equal(point.z(), 0.0));
+    }
+    
+    // Access Add
+    #[test]
+    fn test_add_var() {
+        let mut point = Point3D::empty();
+        *point.mut_x() = 1.0;
+        *point.mut_y() = 2.0;
+        *point.mut_z() = 3.0;
+        assert!(f64_equal(point.x(), 1.0));
+        assert!(f64_equal(point.y(), 2.0));
+        assert!(f64_equal(point.z(), 3.0));
     }
 
     // Dot
