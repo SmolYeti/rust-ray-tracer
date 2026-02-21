@@ -24,7 +24,7 @@ fn bernstein(index: usize, n: usize, u: f64) -> f64 {
     let mut temp = vec![0.0; n + 1];
     temp[n - index] = 1.0;
     let u_inv = 1.0 - u;
-    for i in 1..(n+1) {
+    for i in 1..(n + 1) {
         let mut j = n;
         while j >= i {
             temp[j] = (u_inv * temp[j]) + (u * temp[j - 1]);
@@ -43,7 +43,7 @@ fn all_bernstein(n: usize, u: f64) -> Vec<f64> {
     bernstein[0] = 1.0;
     let u_inv = 1.0 - u;
 
-    for i in 1..(n+1) {
+    for i in 1..(n + 1) {
         let mut saved = 0.0;
         for j in 0..i {
             let temp = bernstein[j];
@@ -68,7 +68,7 @@ impl<const N: usize> BezierCurveND<N> {
         BezierCurveND::new(control_points, Interval::new(Point2D::new([0.0, 1.0])))
     }
 
-     // NURBS Algorithm A1.5 DeCasteljau1, p24
+    // NURBS Algorithm A1.5 DeCasteljau1, p24
     fn de_casteljau(&self, u: f64) -> Point<N> {
         let mut points = self.control_points.clone();
         let u_inv = 1.0 - u;
@@ -102,7 +102,7 @@ impl<const N: usize> BezierCurveND<N> {
         let bernstein = all_bernstein(self.control_points.len() - 2, u);
         let mut deriv = Point::<N>::empty();
 
-        for i in 0.. bernstein.len() {
+        for i in 0..bernstein.len() {
             deriv += bernstein[i] * (self.control_points[i + 1] - self.control_points[i]);
         }
 
@@ -138,9 +138,9 @@ impl Curve3D for BezierCurve3D {
 mod tests {
     use core::f64;
 
-    use crate::bezier_curve::all_bernstein;
     use crate::bezier_curve::BezierCurve2D;
     use crate::bezier_curve::BezierCurve3D;
+    use crate::bezier_curve::all_bernstein;
     use crate::bezier_curve::bernstein;
     use crate::curve::Curve2D;
     use crate::curve::Curve3D;
@@ -158,9 +158,24 @@ mod tests {
             let bern_0 = bernstein(0, 2, u);
             let bern_1 = bernstein(1, 2, u);
             let bern_2 = bernstein(2, 2, u);
-            assert!(f64_equal(all_bern[0], bern_0), "Actual {} vs {}", all_bern[0], bern_0);
-            assert!(f64_equal(all_bern[1], bern_1), "Actual {} vs {}", all_bern[1], bern_1);
-            assert!(f64_equal(all_bern[2], bern_2), "Actual {} vs {}", all_bern[2], bern_2);
+            assert!(
+                f64_equal(all_bern[0], bern_0),
+                "Actual {} vs {}",
+                all_bern[0],
+                bern_0
+            );
+            assert!(
+                f64_equal(all_bern[1], bern_1),
+                "Actual {} vs {}",
+                all_bern[1],
+                bern_1
+            );
+            assert!(
+                f64_equal(all_bern[2], bern_2),
+                "Actual {} vs {}",
+                all_bern[2],
+                bern_2
+            );
         }
     }
 
@@ -182,21 +197,6 @@ mod tests {
 }
 
 /*
-
-TEST(NURBS_Chapter1, BernsteinPartitionOfUnity) {
-  constexpr double div = 1.0 / 99.0;
-  for (size_t n = 1; n < 5; ++n) {
-    for (uint32_t i = 0; i < 100; ++i) {
-      const double u = static_cast<double>(i) * div;
-      const std::vector<double> all_bern = BezierCurveUtil::AllBernstein(n, u);
-      double sum = 0;
-      for (double bern : all_bern) {
-        sum += bern;
-      }
-      EXPECT_DOUBLE_EQ(sum, 1.0);
-    }
-  }
-}
 
 TEST(NURBS_Chapter1, BernsteinStartEnd) {
   const double start_u = 0.0;

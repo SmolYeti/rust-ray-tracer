@@ -2,6 +2,7 @@ pub mod bezier_curve;
 pub mod curve;
 pub mod interval;
 pub mod knot_utility_functions;
+pub mod parametric_curve;
 pub mod point_types;
 pub mod power_basis_curve;
 pub mod surface;
