@@ -22,10 +22,7 @@ impl<const N: usize> PowerBasisCurveND<N> {
     }
 
     pub fn from_bases(bases: Vec<Point<N>>) -> PowerBasisCurveND<N> {
-        PowerBasisCurveND {
-            bases,
-            curve_interval: Interval::new(Point2D::new([0.0, 1.0])),
-        }
+        PowerBasisCurveND::new(bases, Interval::new(Point2D::new([0.0, 1.0])))
     }
 
     fn horner(&self, u: f64) -> Point<N> {
