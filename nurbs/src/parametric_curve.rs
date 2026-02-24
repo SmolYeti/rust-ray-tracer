@@ -45,7 +45,7 @@ impl Curve2D for ParametricCurve2D {
     }
 
     fn evaluate(&self, parameter: f64) -> Point2D {
-        let u = self.interval().localize_clamp_value(parameter);
+        let u = self.interval().clamp_value(parameter);
         self.point_from_funcs(u)
     }
 }
@@ -56,15 +56,18 @@ impl Curve3D for ParametricCurve3D {
     }
 
     fn evaluate(&self, parameter: f64) -> Point3D {
-        let u = self.interval().localize_clamp_value(parameter);
+        let u = self.interval().clamp_value(parameter);
         self.point_from_funcs(u)
     }
 }
 
 #[cfg(test)]
 mod tests {
+    use core::f64;
+
     use crate::curve::Curve2D;
     use crate::curve::Curve3D;
+    use crate::interval::Interval;
     use crate::parametric_curve::ParametricCurve2D;
     use crate::parametric_curve::ParametricCurve3D;
     use crate::point_types::Point2D;
@@ -74,101 +77,158 @@ mod tests {
 
     #[test]
     fn test_2d_construct() {
+        let functions: [Box<dyn Fn(f64) -> f64 + 'static>; 2] =
+            [Box::new(|x: f64| x.cos()), Box::new(|x: f64| x.sin())];
+        let interval = Interval::new(Point2D::new([0.0, f64::consts::PI * 2.0]));
+        let curve = ParametricCurve2D::new(functions, interval);
+
+        assert!(f64_equal(curve.interval().min(), 0.0));
+        assert!(f64_equal(curve.interval().max(), f64::consts::PI * 2.0));
+    }
+
+    #[test]
+    fn test_2d_evaluate() {
+        let functions: [Box<dyn Fn(f64) -> f64 + 'static>; 2] =
+            [Box::new(|x: f64| x.cos()), Box::new(|x: f64| x.sin())];
+        let interval = Interval::new(Point2D::new([0.0, f64::consts::PI * 2.0]));
+        let curve = ParametricCurve2D::new(functions, interval);
+
+        let point = curve.evaluate(f64::consts::FRAC_PI_4);
+
+        let pi4_cos = f64::consts::FRAC_PI_4.cos();
+        let pi4_sin = f64::consts::FRAC_PI_4.sin();
+        assert!(
+            f64_equal(point.x(), pi4_cos),
+            "{} vs {}",
+            point.x(),
+            pi4_cos
+        );
+        assert!(
+            f64_equal(point.y(), pi4_sin),
+            "{} vs {}",
+            point.y(),
+            pi4_sin
+        );
+    }
+
+    #[test]
+    fn test_2d_evaluate_points() {
+        let functions: [Box<dyn Fn(f64) -> f64 + 'static>; 2] =
+            [Box::new(|x: f64| x.cos()), Box::new(|x: f64| x.sin())];
+        let interval = Interval::new(Point2D::new([0.0, f64::consts::PI * 2.0]));
+        let curve = ParametricCurve2D::new(functions, interval);
+
+        let points = curve.evaluate_points(100);
+        let div = (f64::consts::PI * 2.0) / 99.0;
+
+        for i in 0..100 {
+            let parameter = i as f64 * div;
+            let param_cos = parameter.cos();
+            let param_sin = parameter.sin();
+
+            assert!(
+                f64_equal(points[i].x(), param_cos),
+                "{} vs {}",
+                points[i].x(),
+                param_cos
+            );
+            assert!(
+                f64_equal(points[i].y(), param_sin),
+                "{} vs {}",
+                points[i].y(),
+                param_sin
+            );
+        }
+    }
+
+    #[test]
+    fn test_3d_construct() {
+        let functions: [Box<dyn Fn(f64) -> f64 + 'static>; 3] = [
+            Box::new(|x| x.cos()),
+            Box::new(|x| x.sin()),
+            Box::new(|x| x + 1.5),
+        ];
+        let interval = Interval::new(Point2D::new([0.0, f64::consts::PI * 2.0]));
+        let curve = ParametricCurve3D::new(functions, interval);
+
+        assert!(f64_equal(curve.interval().min(), 0.0));
+        assert!(f64_equal(curve.interval().max(), f64::consts::PI * 2.0));
+    }
+
+    #[test]
+    fn test_3d_evaluate() {
+        let functions: [Box<dyn Fn(f64) -> f64 + 'static>; 3] = [
+            Box::new(|x| x.cos()),
+            Box::new(|x| x.sin()),
+            Box::new(|x| x + 1.5),
+        ];
+        let interval = Interval::new(Point2D::new([0.0, f64::consts::PI * 2.0]));
+        let curve = ParametricCurve3D::new(functions, interval);
+
+        let point = curve.evaluate(f64::consts::FRAC_PI_4);
+
+        let pi4_cos = f64::consts::FRAC_PI_4.cos();
+        let pi4_sin = f64::consts::FRAC_PI_4.sin();
+        assert!(
+            f64_equal(point.x(), pi4_cos),
+            "{} vs {}",
+            point.x(),
+            pi4_cos
+        );
+        assert!(
+            f64_equal(point.y(), pi4_sin),
+            "{} vs {}",
+            point.y(),
+            pi4_sin
+        );
+        assert!(
+            f64_equal(point.z(), f64::consts::FRAC_PI_4 + 1.5),
+            "{} vs {}",
+            point.z(),
+            f64::consts::FRAC_PI_4 + 1.5
+        );
+    }
+
+    #[test]
+    fn test_3d_evaluate_points() {
+        let functions: [Box<dyn Fn(f64) -> f64 + 'static>; 3] = [
+            Box::new(|x| x.cos()),
+            Box::new(|x| x.sin()),
+            Box::new(|x| x + 1.5),
+        ];
+        let interval = Interval::new(Point2D::new([0.0, f64::consts::PI * 2.0]));
+        let curve = ParametricCurve3D::new(functions, interval);
+
+        let points = curve.evaluate_points(100);
+        let div = (f64::consts::PI * 2.0) / 99.0;
+
+        for i in 0..100 {
+            let parameter = i as f64 * div;
+            let param_cos = parameter.cos();
+            let param_sin = parameter.sin();
+
+            assert!(
+                f64_equal(points[i].x(), param_cos),
+                "{} vs {}",
+                points[i].x(),
+                param_cos
+            );
+            assert!(
+                f64_equal(points[i].y(), param_sin),
+                "{} vs {}",
+                points[i].y(),
+                param_sin
+            );
+            assert!(
+                f64_equal(points[i].z(), parameter + 1.5),
+                "{} vs {}",
+                points[i].z(),
+                parameter + 1.5
+            );
+        }
     }
 
     /*
-    TEST(NURBS_Chapter1, Parametric2DConstruct) {
-        std::array<std::function<double(double)>, 2> functions;
-        functions[0] = [](double x) { return cos(x); };
-        functions[1] = [](double x) { return sin(x); };
-        const Point2D interval = {0.0, M_PI * 2};
-
-        const ParametricCurve2D curve(functions, interval);
-    }
-
-    TEST(NURBS_Chapter1, Parametric2DPointOnCurve) {
-        std::array<std::function<double(double)>, 2> functions;
-        functions[0] = [](double x) { return cos(x); };
-        functions[1] = [](double x) { return sin(x); };
-        const Point2D interval = {0.0, M_PI * 2};
-
-        const ParametricCurve2D curve(functions, interval);
-
-        const Point2D point = curve.EvaluateCurve(M_PI_4);
-
-        EXPECT_DOUBLE_EQ(point.x, cos(M_PI_4));
-        EXPECT_DOUBLE_EQ(point.y, sin(M_PI_4));
-    }
-
-    TEST(NURBS_Chapter1, Parametric2DPointsOnCurve) {
-        std::array<std::function<double(double)>, 2> functions;
-        functions[0] = [](double x) { return cos(x); };
-        functions[1] = [](double x) { return sin(x); };
-        const Point2D interval = {0.0, M_PI * 2};
-
-        const ParametricCurve2D curve(functions, interval);
-
-        const std::vector<Point2D> points = curve.EvaluateCurvePoints(100);
-
-        constexpr double div = (M_PI * 2) / 99.0;
-        for (uint32_t i = 0; i < 100; ++i) {
-            const double u = static_cast<double>(i) * div;
-            EXPECT_DOUBLE_EQ(points[i].x, cos(u));
-            EXPECT_DOUBLE_EQ(points[i].y, sin(u));
-
-            const double length = sqrt(pow(points[i].x, 2.0) + pow(points[i].y, 2.0));
-            EXPECT_DOUBLE_EQ(length, 1.0);
-        }
-    }
-
-    TEST(NURBS_Chapter1, Parametric3DConstruct) {
-        std::array<std::function<double(double)>, 3> functions;
-        functions[0] = [](double x) { return cos(x); };
-        functions[1] = [](double x) { return sin(x); };
-        functions[2] = [](double x) { return x + 1.5; };
-        const Point2D interval = {0.0, M_PI * 2};
-
-        const ParametricCurve3D curve(functions, interval);
-    }
-
-    TEST(NURBS_Chapter1, Parametric3DPointOnCurve) {
-        std::array<std::function<double(double)>, 3> functions;
-        functions[0] = [](double x) { return cos(x); };
-        functions[1] = [](double x) { return sin(x); };
-        functions[2] = [](double x) { return x + 1.5; };
-        const Point2D interval = {0.0, M_PI * 2};
-
-        const ParametricCurve3D curve(functions, interval);
-
-        const Point3D point = curve.EvaluateCurve(M_PI_4);
-
-        EXPECT_DOUBLE_EQ(point.x, cos(M_PI_4));
-        EXPECT_DOUBLE_EQ(point.y, sin(M_PI_4));
-        EXPECT_DOUBLE_EQ(point.z, M_PI_4 + 1.5);
-    }
-
-    TEST(NURBS_Chapter1, Parametric3DPointsOnCurve) {
-        std::array<std::function<double(double)>, 3> functions;
-        functions[0] = [](double x) { return cos(x); };
-        functions[1] = [](double x) { return sin(x); };
-        functions[2] = [](double x) { return x + 1.5; };
-        const Point2D interval = {0.0, M_PI * 2};
-
-        const ParametricCurve3D curve(functions, interval);
-
-        const std::vector<Point3D> points = curve.EvaluateCurvePoints(100);
-
-        constexpr double div = (M_PI * 2) / 99.0;
-        for (uint32_t i = 0; i < 100; ++i) {
-            const double u = static_cast<double>(i) * div;
-            EXPECT_DOUBLE_EQ(points[i].x, cos(u));
-            EXPECT_DOUBLE_EQ(points[i].y, sin(u));
-            EXPECT_DOUBLE_EQ(points[i].z, u + 1.5);
-
-            const double length = sqrt(pow(points[i].x, 2.0) + pow(points[i].y, 2.0));
-            EXPECT_DOUBLE_EQ(length, 1.0);
-        }
-    }
 
     TEST(NURBS_Chapter1, ParametricSurfConstruct) {
         std::array<std::function<double(Point2D)>, 3> functions;
