@@ -137,6 +137,7 @@ impl Curve3D for BezierCurve3D {
 #[cfg(test)]
 mod tests {
     use core::f64;
+    use std::cmp::max;
 
     use crate::bezier_curve::BezierCurve2D;
     use crate::bezier_curve::BezierCurve3D;
@@ -185,7 +186,7 @@ mod tests {
         for n in 1..5 {
             for i in 0..100 {
                 let u = i as f64 * div;
-                let all_bern = all_bernstein(2, u);
+                let all_bern = all_bernstein(n, u);
                 let mut sum = 0.0;
                 for bern in all_bern {
                     sum += bern;
@@ -194,50 +195,64 @@ mod tests {
             }
         }
     }
+
+    #[test]
+    fn test_berstein_start_end() {
+        let start = 0.0;
+        let end = 1.0;
+        for n in 1..10 {
+            let bern_start = bernstein(0, n, start);
+            let bern_end = bernstein(n, n, end);
+            assert!(f64_equal(bern_start, 1.0), "Actual {}", bern_start);
+            assert!(f64_equal(bern_end, 1.0), "Actual {}", bern_end);
+        }
+    }
+
+    #[test]
+    fn test_berstein_max() {
+        let div = 1.0 / 99.0;
+        for n in 1..5 {
+            let mut maxes = Vec::with_capacity(n);
+            let mut u_vals = Vec::with_capacity(n);
+
+            // Build the max bernstein list
+            let n_1 = 1.0 / (n as f64);
+            for i in 0..n {
+              u_vals.push(i as f64 * n_1);
+              maxes.push(bernstein(i, n, u_vals[i]));
+            }
+
+            // Check values against max
+            for i in 0..100 {
+              let u = i as f64 * div;
+              let all_bern = all_bernstein(n, u);
+              for j in 0..n {
+                if (u_vals[j] - u).abs() < f64::EPSILON {
+                  assert!(f64_equal(all_bern[j], maxes[j]));
+                } else {
+                  assert!(all_bern[j] < maxes[j]);
+                }
+              }
+            }
+        }
+    }
+    
+    #[test]
+    fn test_bezier_2d_construct() {
+        let mut control_points = Vec::with_capacity(4);
+        control_points.push(Point2D::new([0.0, 0.0]));
+        control_points.push(Point2D::new([1.0, 0.0]));
+        control_points.push(Point2D::new([1.0, 1.0]));
+        control_points.push(Point2D::new([0.0, 1.0]));
+
+        let bezier = BezierCurve2D::from_control_points(control_points);
+
+        assert!(f64_equal(bezier.interval().min(), 0.0));
+        assert!(f64_equal(bezier.interval().max(), 1.0));
+    }
 }
 
 /*
-
-TEST(NURBS_Chapter1, BernsteinStartEnd) {
-  const double start_u = 0.0;
-  const double end_u = 1.0;
-  for (size_t n = 1; n < 10; ++n) {
-    const double bern_start = BezierCurveUtil::Bernstein(0, n, start_u);
-    const double bern_end = BezierCurveUtil::Bernstein(n, n, end_u);
-    EXPECT_DOUBLE_EQ(bern_start, 1.0);
-    EXPECT_DOUBLE_EQ(bern_end, 1.0);
-  }
-}
-
-TEST(NURBS_Chapter1, BernsteinMax) {
-  constexpr double div = 1.0 / 99.0;
-  for (size_t n = 1; n < 5; ++n) {
-    std::vector<double> maxes = {};
-    std::vector<double> u_vals = {};
-    // Build the max berstein list
-    double n_1 = 1.0 / static_cast<double>(n);
-    maxes.reserve(n);
-    u_vals.reserve(n);
-    for (uint32_t i = 0; i <= n; ++i) {
-      u_vals.push_back(static_cast<double>(i) * n_1);
-      maxes.push_back(BezierCurveUtil::Bernstein(i, n, u_vals.back()));
-    }
-
-    // Check to make sure the max is never exceeded
-    for (uint32_t i = 0; i < 100; ++i) {
-      const double u = static_cast<double>(i) * div;
-      const std::vector<double> all_bern = BezierCurveUtil::AllBernstein(n, u);
-
-      for (uint32_t j = 0; j <= n; ++j) {
-        if (std::abs(u_vals[j] - u) < std::numeric_limits<double>::epsilon()) {
-          EXPECT_DOUBLE_EQ(all_bern[j], maxes[j]);
-        } else {
-          EXPECT_LT(all_bern[j], maxes[j]);
-        }
-      }
-    }
-  }
-}
 
 TEST(NURBS_Chapter1, Bezier2DConstruct) {
   const std::vector<Point2D> control_points;
