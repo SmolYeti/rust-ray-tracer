@@ -73,7 +73,6 @@ mod tests {
     use crate::point_types::Point2D;
     use crate::point_types::Point3D;
     use crate::utility::f64_equal;
-    use crate::utility::f64_near;
 
     #[test]
     fn test_2d_construct() {
@@ -111,8 +110,7 @@ mod tests {
         );
     }
 
-    #[test]
-    fn test_2d_evaluate_points() {
+    #[test]    fn test_2d_evaluate_points() {
         let functions: [Box<dyn Fn(f64) -> f64 + 'static>; 2] =
             [Box::new(|x: f64| x.cos()), Box::new(|x: f64| x.sin())];
         let interval = Interval::new(Point2D::new([0.0, f64::consts::PI * 2.0]));
@@ -141,8 +139,7 @@ mod tests {
         }
     }
 
-    #[test]
-    fn test_3d_construct() {
+    #[test]    fn test_3d_construct() {
         let functions: [Box<dyn Fn(f64) -> f64 + 'static>; 3] = [
             Box::new(|x| x.cos()),
             Box::new(|x| x.sin()),
@@ -165,7 +162,7 @@ mod tests {
         let interval = Interval::new(Point2D::new([0.0, f64::consts::PI * 2.0]));
         let curve = ParametricCurve3D::new(functions, interval);
 
-        let point = curve.evaluate(f64::consts::FRAC_PI_4);
+        let point: Point3D = curve.evaluate(f64::consts::FRAC_PI_4);
 
         let pi4_cos = f64::consts::FRAC_PI_4.cos();
         let pi4_sin = f64::consts::FRAC_PI_4.sin();
