@@ -145,6 +145,7 @@ mod tests {
     use crate::bezier_curve::bernstein;
     use crate::curve::Curve2D;
     use crate::curve::Curve3D;
+    use crate::interval::Interval;
     use crate::point_types::Point2D;
     use crate::point_types::Point3D;
     use crate::utility::f64_equal;
@@ -218,25 +219,25 @@ mod tests {
             // Build the max bernstein list
             let n_1 = 1.0 / (n as f64);
             for i in 0..n {
-              u_vals.push(i as f64 * n_1);
-              maxes.push(bernstein(i, n, u_vals[i]));
+                u_vals.push(i as f64 * n_1);
+                maxes.push(bernstein(i, n, u_vals[i]));
             }
 
             // Check values against max
             for i in 0..100 {
-              let u = i as f64 * div;
-              let all_bern = all_bernstein(n, u);
-              for j in 0..n {
-                if (u_vals[j] - u).abs() < f64::EPSILON {
-                  assert!(f64_equal(all_bern[j], maxes[j]));
-                } else {
-                  assert!(all_bern[j] < maxes[j]);
+                let u = i as f64 * div;
+                let all_bern = all_bernstein(n, u);
+                for j in 0..n {
+                    if (u_vals[j] - u).abs() < f64::EPSILON {
+                        assert!(f64_equal(all_bern[j], maxes[j]));
+                    } else {
+                        assert!(all_bern[j] < maxes[j]);
+                    }
                 }
-              }
             }
         }
     }
-    
+
     #[test]
     fn test_bezier_2d_construct() {
         let mut control_points = Vec::with_capacity(4);
@@ -250,7 +251,7 @@ mod tests {
         assert!(f64_equal(bezier.interval().min(), 0.0));
         assert!(f64_equal(bezier.interval().max(), 1.0));
     }
-    
+
     #[test]
     fn test_bezier_2d_point() {
         let mut control_points = Vec::with_capacity(4);
@@ -265,39 +266,114 @@ mod tests {
 
         let mut test_points = control_points;
         while test_points.len() > 1 {
-          let mut temp_points = Vec::new();
+            let mut temp_points = Vec::new();
 
-          for i in 1..test_points.len() {
-            temp_points.push((test_points[i - 1] + test_points[i]) * 0.5);
-          }
+            for i in 1..test_points.len() {
+                temp_points.push((test_points[i - 1] + test_points[i]) * 0.5);
+            }
 
-          test_points = temp_points;
+            test_points = temp_points;
         }
 
-        assert!(f64_equal(test_points[0].x(), point.x()), "Actual {} vs {}", test_points[0].x(), point.x());
-        assert!(f64_equal(test_points[0].y(), point.y()), "Actual {} vs {}", test_points[0].y(), point.y());
+        assert!(
+            f64_equal(test_points[0].x(), point.x()),
+            "Actual {} vs {}",
+            test_points[0].x(),
+            point.x()
+        );
+        assert!(
+            f64_equal(test_points[0].y(), point.y()),
+            "Actual {} vs {}",
+            test_points[0].y(),
+            point.y()
+        );
+    }
+
+    #[test]
+    fn test_bezier_2d_point_interval() {
+        let mut control_points = Vec::with_capacity(4);
+        control_points.push(Point2D::new([0.0, 0.0]));
+        control_points.push(Point2D::new([1.0, 0.0]));
+        control_points.push(Point2D::new([1.0, 1.0]));
+        control_points.push(Point2D::new([0.0, 1.0]));
+
+        let bezier = BezierCurve2D::new(
+            control_points.clone(),
+            Interval::new(Point2D::new([0.0, 10.0])),
+        );
+
+        let point = bezier.evaluate(5.0);
+
+        let mut test_points = control_points;
+        while test_points.len() > 1 {
+            let mut temp_points = Vec::new();
+
+            for i in 1..test_points.len() {
+                temp_points.push((test_points[i - 1] + test_points[i]) * 0.5);
+            }
+
+            test_points = temp_points;
+        }
+
+        assert!(
+            f64_equal(test_points[0].x(), point.x()),
+            "Actual {} vs {}",
+            test_points[0].x(),
+            point.x()
+        );
+        assert!(
+            f64_equal(test_points[0].y(), point.y()),
+            "Actual {} vs {}",
+            test_points[0].y(),
+            point.y()
+        );
+    }
+
+    #[test]
+    fn test_bezier_2d_points() {
+        let mut control_points = Vec::with_capacity(4);
+        control_points.push(Point2D::new([0.0, 0.0]));
+        control_points.push(Point2D::new([1.0, 0.0]));
+        control_points.push(Point2D::new([1.0, 1.0]));
+        control_points.push(Point2D::new([0.0, 1.0]));
+
+        let bezier = BezierCurve2D::from_control_points(control_points.clone());
+
+        let points = bezier.evaluate_points(100);
+
+        let div = 1.0 / 99.0;
+        for i in 0..100 {
+            let u = i as f64 * div;
+            let u_inv = 1.0 - u;
+            let mut test_points = control_points.clone();
+            while test_points.len() > 1 {
+                let mut temp_points = Vec::new();
+
+                for i in 1..test_points.len() {
+                    temp_points.push((u_inv * test_points[i - 1]) + (u * test_points[i]));
+                }
+
+                test_points = temp_points;
+            }
+
+            assert!(
+                f64_equal(test_points[0].x(), points[i].x()),
+                "Actual {} vs {}",
+                test_points[0].x(),
+                points[i].x()
+            );
+            assert!(
+                f64_equal(test_points[0].y(), points[i].y()),
+                "Actual {} vs {}",
+                test_points[0].y(),
+                points[i].y()
+            );
+        }
     }
 }
 
 /*
-TEST(NURBS_Chapter1, Bezier2DPointInterval) {
-  std::vector<Point2D> control_points = {{0, 0}, {1, 0}, {1, 1}, {0, 1}};
-  const BezierCurve2D bezier(control_points, {0.0, 10.0});
 
-  const Point2D point = bezier.EvaluateCurve(5.0);
-
-  std::vector<Point2D> test_points = control_points;
-  while (test_points.size() > 1) {
-    std::vector<Point2D> temp_points;
-    for (uint32_t i = 1; i < test_points.size(); ++i) {
-      temp_points.push_back((test_points[i - 1] + test_points[i]) * 0.5);
-    }
-    test_points = temp_points;
-  }
-
-  EXPECT_DOUBLE_EQ(test_points[0].x, point.x);
-  EXPECT_DOUBLE_EQ(test_points[0].y, point.y);
-}
 
 TEST(NURBS_Chapter1, Bezier2DPoints) {
   std::vector<Point2D> control_points = {{0, 0}, {1, 0}, {1, 1}, {0, 1}};
