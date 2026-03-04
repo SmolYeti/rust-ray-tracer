@@ -370,135 +370,213 @@ mod tests {
             );
         }
     }
+
+    #[test]
+    fn test_bezier_2d_points_interval() {
+        let mut control_points = Vec::with_capacity(4);
+        control_points.push(Point2D::new([0.0, 0.0]));
+        control_points.push(Point2D::new([1.0, 0.0]));
+        control_points.push(Point2D::new([1.0, 1.0]));
+        control_points.push(Point2D::new([0.0, 1.0]));
+
+        let bezier = BezierCurve2D::new(control_points.clone(), Interval::from_vals(0.0, 10.0));
+
+        let points = bezier.evaluate_points(100);
+
+        let div = 1.0 / 99.0;
+        for i in 0..100 {
+            let u = i as f64 * div;
+            let u_inv = 1.0 - u;
+            let mut test_points = control_points.clone();
+            while test_points.len() > 1 {
+                let mut temp_points = Vec::new();
+
+                for i in 1..test_points.len() {
+                    temp_points.push((u_inv * test_points[i - 1]) + (u * test_points[i]));
+                }
+
+                test_points = temp_points;
+            }
+
+            assert!(
+                f64_near(test_points[0].x(), points[i].x(), f64::EPSILON * 10.0),
+                "Actual {} vs {}",
+                test_points[0].x(),
+                points[i].x()
+            );
+            assert!(
+                f64_near(test_points[0].y(), points[i].y(), f64::EPSILON * 10.0),
+                "Actual {} vs {}",
+                test_points[0].y(),
+                points[i].y()
+            );
+        }
+    }
+
+    #[test]
+    fn test_bezier_2d_end_derivatives() {
+        let mut control_points = Vec::with_capacity(4);
+        control_points.push(Point2D::new([0.0, 0.0]));
+        control_points.push(Point2D::new([1.0, 1.0]));
+        control_points.push(Point2D::new([2.0, 1.0]));
+        control_points.push(Point2D::new([3.0, 0.0]));
+
+        let bezier = BezierCurve2D::from_control_points(control_points.clone());
+
+        let start = bezier.derivative(0.0);
+        let end = bezier.derivative(1.0);
+
+        let n = (control_points.len() - 1) as f64;
+
+        // The start derivative should be n(P1 - P0)
+        let start_calc = n * (control_points[1] - control_points[0]);
+        assert!(
+            f64_equal(start_calc.x(), start.x()),
+            "Actual: {} vs {}",
+            start_calc.x(),
+            start.x()
+        );
+        assert!(
+            f64_equal(start_calc.y(), start.y()),
+            "Actual: {} vs {}",
+            start_calc.y(),
+            start.y()
+        );
+
+        // The end derivative should be n(Pn - Pn-1)
+        let end_calc = n * (control_points[3] - control_points[2]);
+        assert!(
+            f64_equal(end_calc.x(), end.x()),
+            "Actual: {} vs {}",
+            end_calc.x(),
+            end.x()
+        );
+        assert!(
+            f64_equal(end_calc.y(), end.y()),
+            "Actual: {} vs {}",
+            end_calc.y(),
+            end.y()
+        );
+    }
+
+    #[test]
+    fn test_bezier_2d_end_derivatives_interval() {
+        let mut control_points = Vec::with_capacity(4);
+        control_points.push(Point2D::new([0.0, 0.0]));
+        control_points.push(Point2D::new([1.0, 1.0]));
+        control_points.push(Point2D::new([2.0, 1.0]));
+        control_points.push(Point2D::new([3.0, 0.0]));
+
+        let bezier = BezierCurve2D::new(control_points.clone(), Interval::from_vals(0.0, 17.5));
+
+        let start = bezier.derivative(0.0);
+        let end = bezier.derivative(17.5);
+
+        let n = (control_points.len() - 1) as f64;
+
+        // The start derivative should be n(P1 - P0)
+        let start_calc = n * (control_points[1] - control_points[0]);
+        assert!(
+            f64_equal(start_calc.x(), start.x()),
+            "Actual: {} vs {}",
+            start_calc.x(),
+            start.x()
+        );
+        assert!(
+            f64_equal(start_calc.y(), start.y()),
+            "Actual: {} vs {}",
+            start_calc.y(),
+            start.y()
+        );
+
+        // The end derivative should be n(Pn - Pn-1)
+        let end_calc = n * (control_points[3] - control_points[2]);
+        assert!(
+            f64_equal(end_calc.x(), end.x()),
+            "Actual: {} vs {}",
+            end_calc.x(),
+            end.x()
+        );
+        assert!(
+            f64_equal(end_calc.y(), end.y()),
+            "Actual: {} vs {}",
+            end_calc.y(),
+            end.y()
+        );
+    }
+
+    #[test]
+    fn test_bezier_2d_bernstein_vs_decasteljau() {
+        let mut control_points = Vec::with_capacity(4);
+        control_points.push(Point2D::new([0.0, 0.0]));
+        control_points.push(Point2D::new([1.0, 0.0]));
+        control_points.push(Point2D::new([1.0, 1.0]));
+        control_points.push(Point2D::new([0.0, 1.0]));
+
+        let bezier = BezierCurve2D::from_control_points(control_points.clone());
+
+        let div = 1.0 / 99.0;
+        for i in 0..100 {
+            let param = i as f64 * div;
+            let bernstein = bezier.point_on_curve(param);
+            let decasteljau = bezier.de_casteljau(param);
+            assert!(
+                f64_near(bernstein.x(), decasteljau.x(), f64::EPSILON * 10.0),
+                "Actual {} vs {}",
+                bernstein.x(),
+                decasteljau.x()
+            );
+            assert!(
+                f64_near(bernstein.y(), decasteljau.y(), f64::EPSILON * 10.0),
+                "Actual {} vs {}",
+                bernstein.y(),
+                decasteljau.y()
+            );
+        }
+    }
+
+    #[test]
+    fn test_bezier_2d_polynomial_compare() {
+        let mut control_points = Vec::with_capacity(4);
+        control_points.push(Point2D::new([0.0, 0.0]));
+        control_points.push(Point2D::new([1.0, 0.0]));
+        control_points.push(Point2D::new([1.0, 1.0]));
+        control_points.push(Point2D::new([0.0, 1.0]));
+
+        let bezier = BezierCurve2D::from_control_points(control_points.clone());
+
+        let div = 1.0 / 99.0;
+        for i in 0..100 {
+            let param = i as f64 * div;
+
+            // Bezier
+            let point_b = bezier.evaluate(param);
+
+            // Cubic Bezier Polynomial
+            let param_inverse = 1.0 - param;
+            let mut point_p = param_inverse.powi(3) * control_points[0];
+            point_p += 3.0 * param * param_inverse.powi(2) * control_points[1];
+            point_p += 3.0 * param.powi(2) * param_inverse * control_points[2];
+            point_p += param.powi(3) * control_points[3];
+
+            // Compare
+            assert!(
+                f64_near(point_b.x(), point_p.x(), f64::EPSILON * 10.0),
+                "Actual {} vs {}",
+                point_b.x(),
+                point_p.x()
+            );
+            assert!(
+                f64_near(point_b.y(), point_p.y(), f64::EPSILON * 10.0),
+                "Actual {} vs {}",
+                point_b.y(),
+                point_p.y()
+            );
+        }
+    }
 }
 
 /*
-
-
-TEST(NURBS_Chapter1, Bezier2DPoints) {
-  std::vector<Point2D> control_points = {{0, 0}, {1, 0}, {1, 1}, {0, 1}};
-  const Point2D interval = {0.0, 1.0};
-  const BezierCurve2D bezier(control_points, interval);
-
-  const std::vector<Point2D> points = bezier.EvaluateCurvePoints(100);
-
-  constexpr double div = 1.0 / 99.0;
-  for (uint32_t i = 0; i < 100; ++i) {
-    const double u = static_cast<double>(i) * div;
-    const double u_i = 1.0 - u;
-    std::vector<Point2D> test_points = control_points;
-    while (test_points.size() > 1) {
-      std::vector<Point2D> temp_points;
-      for (uint32_t i = 1; i < test_points.size(); ++i) {
-        temp_points.push_back((u_i * test_points[i - 1]) +
-                              (u * test_points[i]));
-      }
-      test_points = temp_points;
-    }
-
-    EXPECT_DOUBLE_EQ(test_points[0].x, points[i].x);
-    EXPECT_DOUBLE_EQ(test_points[0].y, points[i].y);
-  }
-}
-
-TEST(NURBS_Chapter1, Bezier2DPointsInterval) {
-  double tolerance = std::numeric_limits<double>::epsilon() * 10;
-  std::vector<Point2D> control_points = {{0, 0}, {1, 0}, {1, 1}, {0, 1}};
-  const Point2D interval = {0.0, 10.0};
-  const BezierCurve2D bezier(control_points, interval);
-
-  const std::vector<Point2D> points = bezier.EvaluateCurvePoints(100);
-
-  constexpr double div = 1.0 / 99.0;
-  for (uint32_t i = 0; i < 100; ++i) {
-    const double u = static_cast<double>(i) * div;
-    const double u_i = 1.0 - u;
-    std::vector<Point2D> test_points = control_points;
-    while (test_points.size() > 1) {
-      std::vector<Point2D> temp_points;
-      for (uint32_t i = 1; i < test_points.size(); ++i) {
-        temp_points.push_back((u_i * test_points[i - 1]) +
-                              (u * test_points[i]));
-      }
-      test_points = temp_points;
-    }
-
-    EXPECT_NEAR(test_points[0].x, points[i].x, tolerance);
-    EXPECT_NEAR(test_points[0].y, points[i].y, tolerance);
-  }
-}
-
-TEST(NURBS_Chapter1, Bezier2DEndDerivatives) {
-  std::vector<Point2D> control_points = {{0, 0}, {1, 1}, {2, 1}, {3, 0}};
-  const BezierCurve2D bezier(control_points);
-
-  const Point2D start_d = bezier.Derivative(0.0);
-  const Point2D end_d = bezier.Derivative(1.0);
-
-  const double n = static_cast<double>(control_points.size() - 1);
-  // The start derivative should be n(P1 - P0)
-  const Point2D start_calc = n * (control_points[1] - control_points[0]);
-  EXPECT_DOUBLE_EQ(start_calc.x, start_d.x);
-  EXPECT_DOUBLE_EQ(start_calc.y, start_d.y);
-  // The end derivative should be n(Pn - Pn-1)
-  const Point2D end_calc = n * (control_points[3] - control_points[2]);
-  EXPECT_DOUBLE_EQ(end_calc.x, end_d.x);
-  EXPECT_DOUBLE_EQ(end_calc.y, end_d.y);
-}
-
-TEST(NURBS_Chapter1, Bezier2DEndDerivativesInterval) {
-  std::vector<Point2D> control_points = {{0, 0}, {1, 1}, {2, 1}, {3, 0}};
-  const BezierCurve2D bezier(control_points, {0.0, 17.5});
-
-  const Point2D start_d = bezier.Derivative(0.0);
-  const Point2D end_d = bezier.Derivative(17.5);
-
-  const double n = static_cast<double>(control_points.size() - 1);
-  // The start derivative should be n(P1 - P0)
-  const Point2D start_calc = n * (control_points[1] - control_points[0]);
-  EXPECT_DOUBLE_EQ(start_calc.x, start_d.x);
-  EXPECT_DOUBLE_EQ(start_calc.y, start_d.y);
-  // The end derivative should be n(Pn - Pn-1)
-  const Point2D end_calc = n * (control_points[3] - control_points[2]);
-  EXPECT_DOUBLE_EQ(end_calc.x, end_d.x);
-  EXPECT_DOUBLE_EQ(end_calc.y, end_d.y);
-}
-
-TEST(NURBS_Chapter1, BernsteinVsDeCasteljau2D) {
-  const std::vector<Point2D> control_points = {
-      {0, 0}, {0, 1}, {1, 1}, {1, 0}};
-  const BezierCurve2D bezier(control_points);
-  constexpr double div = 1.0 / 99.0;
-  for (uint32_t i = 0; i < 100; ++i) {
-    const double u = static_cast<double>(i) * div;
-    const Point2D bern = bezier.PointOnBezierCurve(u);
-    const Point2D cast = bezier.DeCasteljau(u);
-    EXPECT_DOUBLE_EQ(bern.x, cast.x);
-    EXPECT_DOUBLE_EQ(bern.y, cast.y);
-  }
-}
-
-TEST(NURBS_Chapter1, Bezier2DPolynomialCompareEx1_6) {
-  const std::vector<Point2D> control_points = {
-      {0, 0}, {0, 1}, {1, 1}, {1, 0}};
-  const BezierCurve2D bezier(control_points);
-  constexpr double div = 1.0 / 99.0;
-  for (uint32_t i = 0; i < 100; ++i) {
-    const double u = static_cast<double>(i) * div;
-    // Bezier
-    const Point2D point_b = bezier.EvaluateCurve(u);
-
-    // Cubic Bezier Polynomial
-    const double u_i = 1.0 - u;
-    Point2D point_p = std::pow(u_i, 3) * control_points[0];
-    point_p += 3 * u * std::pow(u_i, 2) * control_points[1];
-    point_p += 3 * std::pow(u, 2) * u_i * control_points[2];
-    point_p += std::pow(u, 3) * control_points[3];
-
-    EXPECT_DOUBLE_EQ(point_b.x, point_p.x);
-    EXPECT_DOUBLE_EQ(point_b.y, point_p.y);
-  }
-}
 
 TEST(NURBS_Chapter1, Bezier2DPolynomialCompareDerivEx1_6) {
   const std::vector<Point2D> control_points = {
