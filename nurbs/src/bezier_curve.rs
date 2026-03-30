@@ -20,7 +20,7 @@ pub type BezierCurve3D = BezierCurveND<3>;
 // i - index of berstein polynomial
 // n - degree of berstein polynomial + 1
 // u - input value to berstain polynomial
-fn bernstein(index: usize, n: usize, u: f64) -> f64 {
+pub fn bernstein(index: usize, n: usize, u: f64) -> f64 {
     let mut temp = vec![0.0; n + 1];
     temp[n - index] = 1.0;
     let u_inv = 1.0 - u;
@@ -38,7 +38,7 @@ fn bernstein(index: usize, n: usize, u: f64) -> f64 {
 // A vector with the values of the Bernstein polynomials of degree n at the
 // fixed value of u B(0,n - 1) (u) to B(n - 1,n - 1)(u) Parameters: n - degree
 // of berstein polynomial + 1 u - input value to berstain polynomial
-fn all_bernstein(n: usize, u: f64) -> Vec<f64> {
+pub fn all_bernstein(n: usize, u: f64) -> Vec<f64> {
     let mut bernstein = vec![0.0; n + 1];
     bernstein[0] = 1.0;
     let u_inv = 1.0 - u;
@@ -84,7 +84,7 @@ impl<const N: usize> BezierCurveND<N> {
     }
 
     // NURBS Algorithm A1.4 PointOnBezierCurv, p22
-    fn point_on_curve(&self, param: f64) -> Point<N> {
+    fn _point_on_curve(&self, param: f64) -> Point<N> {
         let u = self.curve_interval.localize_clamp_value(param);
         let mut point = Point::<N>::empty();
         let bernstein = all_bernstein(self.control_points.len() - 1, u);
@@ -98,7 +98,7 @@ impl<const N: usize> BezierCurveND<N> {
 
     // Chaper 1, Equation 1.9 derivative of a Bezier curve, p22
     // This is probably wrong
-    fn derivative(&self, param: f64) -> Point<N> {
+    pub fn derivative(&self, param: f64) -> Point<N> {
         let u = self.curve_interval.localize_clamp_value(param);
         let bernstein = all_bernstein(self.control_points.len() - 2, u);
         let mut deriv = Point::<N>::empty();
@@ -518,7 +518,7 @@ mod tests {
         let div = 1.0 / 99.0;
         for i in 0..100 {
             let param = i as f64 * div;
-            let bernstein = bezier.point_on_curve(param);
+            let bernstein = bezier._point_on_curve(param);
             let decasteljau = bezier.de_casteljau(param);
             assert!(
                 f64_near(bernstein.x(), decasteljau.x(), f64::EPSILON * 10.0),
@@ -932,7 +932,7 @@ mod tests {
         let div = 1.0 / 99.0;
         for i in 0..100 {
             let param = i as f64 * div;
-            let bernstein = bezier.point_on_curve(param);
+            let bernstein = bezier._point_on_curve(param);
             let decasteljau = bezier.de_casteljau(param);
             assert!(
                 f64_near(bernstein.x(), decasteljau.x(), f64::EPSILON * 10.0),
