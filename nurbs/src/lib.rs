@@ -1,4 +1,5 @@
 pub mod bezier_curve;
+pub mod bezier_surface;
 pub mod curve;
 pub mod interval;
 pub mod knot_utility_functions;
