@@ -34,6 +34,10 @@ impl Interval {
         self.range.y()
     }
 
+    pub fn mid(&self) -> f64 {
+        (self.range.x() + self.range.y()) * 0.5
+    }
+
     pub fn is_valid(&self) -> bool {
         self.interval_div > 0.0
     }
@@ -82,6 +86,18 @@ mod tests {
         assert!(interval.is_valid());
         assert!(f64_equal(interval.min(), 1.0));
         assert!(f64_equal(interval.max(), 2.0));
+    }
+
+    #[test]
+    fn test_mid() {
+        let interval = Interval::from_vals(-1.0, 1.0);
+        assert!(f64_equal(interval.mid(), 0.0));
+
+        let interval = Interval::from_vals(-10.0, -8.0);
+        assert!(f64_equal(interval.mid(), -9.0));
+
+        let interval = Interval::from_vals(6.0, 10.0);
+        assert!(f64_equal(interval.mid(), 8.0));
     }
 
     #[test]

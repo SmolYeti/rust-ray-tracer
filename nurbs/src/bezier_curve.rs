@@ -5,6 +5,7 @@ use crate::point_types::Point;
 use crate::point_types::Point2D;
 use crate::point_types::Point3D;
 
+#[derive(Clone)]
 pub struct BezierCurveND<const N: usize> {
     control_points: Vec<Point<N>>,
     curve_interval: Interval,
@@ -64,7 +65,7 @@ impl<const N: usize> BezierCurveND<N> {
         }
     }
 
-    pub fn from_control_points(control_points: Vec<Point<N>>) -> BezierCurveND<N> {
+    pub fn from_points(control_points: Vec<Point<N>>) -> BezierCurveND<N> {
         BezierCurveND::new(control_points, Interval::new(Point2D::new([0.0, 1.0])))
     }
 
@@ -246,7 +247,7 @@ mod tests {
         control_points.push(Point2D::new([1.0, 1.0]));
         control_points.push(Point2D::new([0.0, 1.0]));
 
-        let bezier = BezierCurve2D::from_control_points(control_points);
+        let bezier = BezierCurve2D::from_points(control_points);
 
         assert!(f64_equal(bezier.interval().min(), 0.0));
         assert!(f64_equal(bezier.interval().max(), 1.0));
@@ -260,7 +261,7 @@ mod tests {
         control_points.push(Point2D::new([1.0, 1.0]));
         control_points.push(Point2D::new([0.0, 1.0]));
 
-        let bezier = BezierCurve2D::from_control_points(control_points.clone());
+        let bezier = BezierCurve2D::from_points(control_points.clone());
 
         let point = bezier.evaluate(0.5);
 
@@ -337,7 +338,7 @@ mod tests {
         control_points.push(Point2D::new([1.0, 1.0]));
         control_points.push(Point2D::new([0.0, 1.0]));
 
-        let bezier = BezierCurve2D::from_control_points(control_points.clone());
+        let bezier = BezierCurve2D::from_points(control_points.clone());
 
         let points = bezier.evaluate_points(100);
 
@@ -421,7 +422,7 @@ mod tests {
         control_points.push(Point2D::new([2.0, 1.0]));
         control_points.push(Point2D::new([3.0, 0.0]));
 
-        let bezier = BezierCurve2D::from_control_points(control_points.clone());
+        let bezier = BezierCurve2D::from_points(control_points.clone());
 
         let start = bezier.derivative(0.0);
         let end = bezier.derivative(1.0);
@@ -513,7 +514,7 @@ mod tests {
         control_points.push(Point2D::new([1.0, 1.0]));
         control_points.push(Point2D::new([0.0, 1.0]));
 
-        let bezier = BezierCurve2D::from_control_points(control_points.clone());
+        let bezier = BezierCurve2D::from_points(control_points.clone());
 
         let div = 1.0 / 99.0;
         for i in 0..100 {
@@ -543,7 +544,7 @@ mod tests {
         control_points.push(Point2D::new([1.0, 1.0]));
         control_points.push(Point2D::new([0.0, 1.0]));
 
-        let bezier = BezierCurve2D::from_control_points(control_points.clone());
+        let bezier = BezierCurve2D::from_points(control_points.clone());
 
         let div = 1.0 / 99.0;
         for i in 0..100 {
@@ -583,7 +584,7 @@ mod tests {
             Point2D::new([1.0, 1.0]),
             Point2D::new([1.0, 0.0]),
         ];
-        let bezier = BezierCurve2D::from_control_points(control_points.clone());
+        let bezier = BezierCurve2D::from_points(control_points.clone());
         let div = 1.0 / 99.0;
         for i in 0..100 {
             // Bezier
@@ -611,7 +612,7 @@ mod tests {
             Point3D::new([0.0, 1.0, 3.0]),
         ];
 
-        let bezier = BezierCurve3D::from_control_points(control_points);
+        let bezier = BezierCurve3D::from_points(control_points);
 
         assert!(f64_equal(bezier.interval().min(), 0.0));
         assert!(f64_equal(bezier.interval().max(), 1.0));
@@ -626,7 +627,7 @@ mod tests {
             Point3D::new([0.0, 1.0, 3.0]),
         ];
 
-        let bezier = BezierCurve3D::from_control_points(control_points.clone());
+        let bezier = BezierCurve3D::from_points(control_points.clone());
 
         let point = bezier.evaluate(0.5);
 
@@ -717,7 +718,7 @@ mod tests {
             Point3D::new([0.0, 1.0, 3.0]),
         ];
 
-        let bezier = BezierCurve3D::from_control_points(control_points.clone());
+        let bezier = BezierCurve3D::from_points(control_points.clone());
 
         let points = bezier.evaluate_points(100);
 
@@ -815,7 +816,7 @@ mod tests {
             Point3D::new([0.0, 1.0, 3.0]),
         ];
 
-        let bezier = BezierCurve3D::from_control_points(control_points.clone());
+        let bezier = BezierCurve3D::from_points(control_points.clone());
 
         let start = bezier.derivative(0.0);
         let end = bezier.derivative(1.0);
@@ -927,7 +928,7 @@ mod tests {
             Point3D::new([0.0, 1.0, 3.0]),
         ];
 
-        let bezier = BezierCurve3D::from_control_points(control_points.clone());
+        let bezier = BezierCurve3D::from_points(control_points.clone());
 
         let div = 1.0 / 99.0;
         for i in 0..100 {
@@ -964,7 +965,7 @@ mod tests {
             Point3D::new([0.0, 1.0, 3.0]),
         ];
 
-        let bezier = BezierCurve3D::from_control_points(control_points.clone());
+        let bezier = BezierCurve3D::from_points(control_points.clone());
 
         let div = 1.0 / 99.0;
         for i in 0..100 {
@@ -1010,7 +1011,7 @@ mod tests {
             Point3D::new([1.0, 1.0, 2.0]),
             Point3D::new([0.0, 1.0, 3.0]),
         ];
-        let bezier = BezierCurve3D::from_control_points(control_points.clone());
+        let bezier = BezierCurve3D::from_points(control_points.clone());
         let div = 1.0 / 99.0;
         for i in 0..100 {
             // Bezier
