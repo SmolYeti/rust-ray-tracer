@@ -112,7 +112,6 @@ mod tests {
     use crate::point_types::Point3D;
     use crate::surface::Surface;
     use crate::utility::f64_equal;
-    use crate::utility::f64_near;
 
     #[test]
     fn test_bezier_surface_construct() {
@@ -272,132 +271,161 @@ mod tests {
         assert!(f64_equal(point.y(), test_pt.y()));
         assert!(f64_equal(point.z(), test_pt.z()));
     }
-}
 
-/*
+    #[test]
+    fn test_bezier_surface_points() {
+        let point_count = 100;
+        let div = 1.0 / ((point_count - 1) as f64);
+        let mut curves: Vec<BezierCurve3D> = Vec::with_capacity(4);
+        {
+            let control_points = vec![
+                Point3D::new([0.0, -1.0, 0.0]),
+                Point3D::new([0.0, 2.0, 1.0]),
+                Point3D::new([0.0, 2.0, 2.0]),
+                Point3D::new([0.0, 1.0, 3.0]),
+            ];
+            curves.push(BezierCurve3D::from_points(control_points));
+        }
+        {
+            let control_points = vec![
+                Point3D::new([1.0, 0.0, 0.0]),
+                Point3D::new([1.0, 4.0, 1.0]),
+                Point3D::new([1.0, 3.0, 2.0]),
+                Point3D::new([1.0, 2.0, 3.0]),
+            ];
+            curves.push(BezierCurve3D::from_points(control_points));
+        }
+        {
+            let control_points = vec![
+                Point3D::new([2.0, 2.0, 0.0]),
+                Point3D::new([2.0, 1.0, 1.0]),
+                Point3D::new([2.0, 0.0, 2.0]),
+                Point3D::new([2.0, -1.0, 3.0]),
+            ];
+            curves.push(BezierCurve3D::from_points(control_points));
+        }
+        {
+            let control_points = vec![
+                Point3D::new([3.0, 3.0, 0.0]),
+                Point3D::new([3.0, -2.0, 1.0]),
+                Point3D::new([3.0, -4.0, 2.0]),
+                Point3D::new([3.0, 0.0, 3.0]),
+            ];
+            curves.push(BezierCurve3D::from_points(control_points));
+        }
 
-TEST(NURBS_Chapter1, BezierSurfacePoints) {
-  constexpr uint32_t point_count = 100;
-  constexpr double div = 1.0 / static_cast<double>(point_count - 1);
-  std::vector<BezierCurve3D> curves;
-  {
-    std::vector<Point3D> control_points;
-    control_points.push_back({0, -1, 0});
-    control_points.push_back({0, 2, 1});
-    control_points.push_back({0, 2, 2});
-    control_points.push_back({0, 1, 3});
-    curves.push_back(control_points);
-  }
-  {
-    std::vector<Point3D> control_points;
-    control_points.push_back({1, 0, 0});
-    control_points.push_back({1, 4, 1});
-    control_points.push_back({1, 3, 2});
-    control_points.push_back({1, 2, 3});
-    curves.push_back(control_points);
-  }
-  {
-    std::vector<Point3D> control_points;
-    control_points.push_back({2, 2, 0});
-    control_points.push_back({2, 1, 1});
-    control_points.push_back({2, 0, 2});
-    control_points.push_back({2, -1, 3});
-    curves.push_back(control_points);
-  }
-  {
-    std::vector<Point3D> control_points;
-    control_points.push_back({3, 3, 0});
-    control_points.push_back({3, -2, 1});
-    control_points.push_back({3, -4, 2});
-    control_points.push_back({3, 0, 3});
-    curves.push_back(control_points);
-  }
-  const BezierSurface surface(curves);
+        let bezier = BezierSurface::from_curves(curves.clone());
+        let points = bezier.evaluate_points(point_count, point_count);
 
-  const std::vector<Point3D> points =
-      surface.EvaluatePoints(point_count, point_count);
+        for i in 0..point_count {
+            let u = i as f64 * div;
+            let temp_cps = vec![
+                curves[0].evaluate(u),
+                curves[1].evaluate(u),
+                curves[2].evaluate(u),
+                curves[3].evaluate(u),
+            ];
+            let temp_curve = BezierCurve3D::from_points(temp_cps);
+            for j in 0..point_count {
+                let v = j as f64 * div;
+                let test_pt = temp_curve.evaluate(v);
+                let point = points[i * point_count + j];
 
-  for (uint32_t i = 0; i < point_count; ++i) {
-    const double u = static_cast<double>(i) * div;
-    const std::vector<Point3D> temp_cps = {
-        curves[0].EvaluateCurve(u), curves[1].EvaluateCurve(u),
-        curves[2].EvaluateCurve(u), curves[3].EvaluateCurve(u)};
-    const BezierCurve3D curve(temp_cps);
-    for (uint32_t j = 0; j < point_count; ++j) {
-      const double v = static_cast<double>(j) * div;
-      const Point3D test_point = curve.EvaluateCurve(v);
-      const Point3D &point = points[(i * point_count) + j];
-
-      EXPECT_DOUBLE_EQ(test_point.x, point.x);
-      EXPECT_DOUBLE_EQ(test_point.y, point.y);
-      EXPECT_DOUBLE_EQ(test_point.z, point.z);
+                assert!(f64_equal(point.x(), test_pt.x()));
+                assert!(f64_equal(point.y(), test_pt.y()));
+                assert!(f64_equal(point.z(), test_pt.z()));
+            }
+        }
     }
-  }
-}
 
-TEST(NURBS_Chapter1, BezierSurfacePointsInterval) {
-  constexpr double tolerance = std::numeric_limits<double>::epsilon() * 100.0;
-  const Point2D u_interval = {-10.0, 10.0};
-  const Point2D v_interval = {22.0, 30.0};
-  const double u_mid = (u_interval.x + u_interval.y) * 0.5;
-  const double v_mid = (v_interval.x + v_interval.y) * 0.5;
-  constexpr uint32_t point_count = 100;
-  constexpr double div = 1.0 / static_cast<double>(point_count - 1);
-  const double u_div = (div * (u_interval.y - u_interval.x));
-  const double v_div = (div * (v_interval.y - v_interval.x));
-  std::vector<BezierCurve3D> curves;
-  {
-    std::vector<Point3D> control_points;
-    control_points.push_back({0, -1, 0});
-    control_points.push_back({0, 2, 1});
-    control_points.push_back({0, 2, 2});
-    control_points.push_back({0, 1, 3});
-    curves.emplace_back(control_points, u_interval);
-  }
-  {
-    std::vector<Point3D> control_points;
-    control_points.push_back({1, 0, 0});
-    control_points.push_back({1, 4, 1});
-    control_points.push_back({1, 3, 2});
-    control_points.push_back({1, 2, 3});
-    curves.emplace_back(control_points, u_interval);
-  }
-  {
-    std::vector<Point3D> control_points;
-    control_points.push_back({2, 2, 0});
-    control_points.push_back({2, 1, 1});
-    control_points.push_back({2, 0, 2});
-    control_points.push_back({2, -1, 3});
-    curves.emplace_back(control_points, u_interval);
-  }
-  {
-    std::vector<Point3D> control_points;
-    control_points.push_back({3, 3, 0});
-    control_points.push_back({3, -2, 1});
-    control_points.push_back({3, -4, 2});
-    control_points.push_back({3, 0, 3});
-    curves.emplace_back(control_points, u_interval);
-  }
-  const BezierSurface surface(curves, u_interval, v_interval);
+    #[test]
+    fn test_bezier_surface_points_interval() {
+        let u_interval = Interval::new(Point2D::new([7.0, 10.0]));
+        let v_interval = Interval::new(Point2D::new([-12.0, 20.0]));
+        let point_count = 100;
+        let div = 1.0 / ((point_count - 1) as f64);
+        let u_div = div * (u_interval.max() - u_interval.min());
+        let v_div = div * (v_interval.max() - v_interval.min());
+        let mut curves: Vec<BezierCurve3D> = Vec::with_capacity(4);
+        {
+            let control_points = vec![
+                Point3D::new([0.0, -1.0, 0.0]),
+                Point3D::new([0.0, 2.0, 1.0]),
+                Point3D::new([0.0, 2.0, 2.0]),
+                Point3D::new([0.0, 1.0, 3.0]),
+            ];
+            curves.push(BezierCurve3D::new(control_points, u_interval));
+        }
+        {
+            let control_points = vec![
+                Point3D::new([1.0, 0.0, 0.0]),
+                Point3D::new([1.0, 4.0, 1.0]),
+                Point3D::new([1.0, 3.0, 2.0]),
+                Point3D::new([1.0, 2.0, 3.0]),
+            ];
+            curves.push(BezierCurve3D::new(control_points, u_interval));
+        }
+        {
+            let control_points = vec![
+                Point3D::new([2.0, 2.0, 0.0]),
+                Point3D::new([2.0, 1.0, 1.0]),
+                Point3D::new([2.0, 0.0, 2.0]),
+                Point3D::new([2.0, -1.0, 3.0]),
+            ];
+            curves.push(BezierCurve3D::new(control_points, u_interval));
+        }
+        {
+            let control_points = vec![
+                Point3D::new([3.0, 3.0, 0.0]),
+                Point3D::new([3.0, -2.0, 1.0]),
+                Point3D::new([3.0, -4.0, 2.0]),
+                Point3D::new([3.0, 0.0, 3.0]),
+            ];
+            curves.push(BezierCurve3D::new(control_points, u_interval));
+        }
 
-  const std::vector<Point3D> points =
-      surface.EvaluatePoints(point_count, point_count);
+        let bezier = BezierSurface::new(curves.clone(), u_interval, v_interval);
+        let points = bezier.evaluate_points(point_count, point_count);
 
-  for (uint32_t i = 0; i < point_count; ++i) {
-    const double u = (static_cast<double>(i) * u_div) + u_interval.x;
-    const std::vector<Point3D> temp_cps = {
-        curves[0].EvaluateCurve(u), curves[1].EvaluateCurve(u),
-        curves[2].EvaluateCurve(u), curves[3].EvaluateCurve(u)};
-    const BezierCurve3D curve(temp_cps, v_interval);
-    for (uint32_t j = 0; j < point_count; ++j) {
-      const double v = (static_cast<double>(j) * v_div) + v_interval.x;
-      const Point3D test_point = curve.EvaluateCurve(v);
-      const Point3D &point = points[(i * point_count) + j];
+        for i in 0..point_count {
+            let u = (i as f64 * u_div) + u_interval.min();
+            let temp_cps = vec![
+                curves[0].evaluate(u),
+                curves[1].evaluate(u),
+                curves[2].evaluate(u),
+                curves[3].evaluate(u),
+            ];
+            let temp_curve = BezierCurve3D::new(temp_cps, v_interval);
+            for j in 0..point_count {
+                let v = (j as f64 * v_div) + v_interval.min();
+                let test_pt = temp_curve.evaluate(v);
+                let point = points[i * point_count + j];
 
-      EXPECT_NEAR(test_point.x, point.x, tolerance);
-      EXPECT_NEAR(test_point.y, point.y, tolerance);
-      EXPECT_NEAR(test_point.z, point.z, tolerance);
+                assert!(
+                    f64_equal(point.x(), test_pt.x()),
+                    "<{}, {}> Actual {} vs {}",
+                    i,
+                    j,
+                    point.x(),
+                    test_pt.x()
+                );
+                assert!(
+                    f64_equal(point.y(), test_pt.y()),
+                    "<{}, {}> Actual {} vs {}",
+                    i,
+                    j,
+                    point.y(),
+                    test_pt.y()
+                );
+                assert!(
+                    f64_equal(point.z(), test_pt.z()),
+                    "<{}, {}> Actual {} vs {}",
+                    i,
+                    j,
+                    point.z(),
+                    test_pt.z()
+                );
+            }
+        }
     }
-  }
 }
-*/
