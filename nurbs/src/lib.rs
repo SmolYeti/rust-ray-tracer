@@ -4,6 +4,7 @@ pub mod curve;
 pub mod interval;
 pub mod knot_utility_functions;
 pub mod parametric_curve;
+pub mod parametric_surface;
 pub mod point_types;
 pub mod power_basis_curve;
 pub mod surface;

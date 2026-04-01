@@ -25,7 +25,7 @@ impl<const N: usize> ParametricCurveND<N> {
     }
 
     pub fn from_functions(functions: [Box<dyn Fn(f64) -> f64>; N]) -> ParametricCurveND<N> {
-        ParametricCurveND::new(functions, Interval::new(Point2D::new([0.0, 1.0])))
+        ParametricCurveND::new(functions, Interval::from_values(0.0, 1.0))
     }
 
     fn point_from_funcs(&self, parameter: f64) -> Point<N> {
@@ -63,8 +63,6 @@ impl Curve3D for ParametricCurve3D {
 
 #[cfg(test)]
 mod tests {
-    use core::f64;
-
     use crate::curve::Curve2D;
     use crate::curve::Curve3D;
     use crate::interval::Interval;
@@ -73,6 +71,7 @@ mod tests {
     use crate::point_types::Point2D;
     use crate::point_types::Point3D;
     use crate::utility::f64_equal;
+    use core::f64;
 
     #[test]
     fn test_2d_construct() {
@@ -110,7 +109,8 @@ mod tests {
         );
     }
 
-    #[test]    fn test_2d_evaluate_points() {
+    #[test]
+    fn test_2d_evaluate_points() {
         let functions: [Box<dyn Fn(f64) -> f64 + 'static>; 2] =
             [Box::new(|x: f64| x.cos()), Box::new(|x: f64| x.sin())];
         let interval = Interval::new(Point2D::new([0.0, f64::consts::PI * 2.0]));
@@ -139,7 +139,8 @@ mod tests {
         }
     }
 
-    #[test]    fn test_3d_construct() {
+    #[test]
+    fn test_3d_construct() {
         let functions: [Box<dyn Fn(f64) -> f64 + 'static>; 3] = [
             Box::new(|x| x.cos()),
             Box::new(|x| x.sin()),
@@ -224,65 +225,4 @@ mod tests {
             );
         }
     }
-
-    /*
-
-    TEST(NURBS_Chapter1, ParametricSurfConstruct) {
-        std::array<std::function<double(Point2D)>, 3> functions;
-        functions[0] = [](Point2D uv) { return sin(uv.x) * cos(uv.y); };
-        functions[1] = [](Point2D uv) { return sin(uv.x) * sin(uv.y); };
-        functions[2] = [](Point2D uv) { return cos(uv.x); };
-        const Point2D u_interval = {0.0, M_PI * 2};
-        const Point2D v_interval = {0.0, M_PI * 2};
-
-        const ParametricSurface surface(functions, u_interval, v_interval);
-    }
-
-    TEST(NURBS_Chapter1, ParametricSurfPoint) {
-        std::array<std::function<double(Point2D)>, 3> functions;
-        functions[0] = [](Point2D uv) { return sin(uv.x) * cos(uv.y); };
-        functions[1] = [](Point2D uv) { return sin(uv.x) * sin(uv.y); };
-        functions[2] = [](Point2D uv) { return cos(uv.x); };
-        const Point2D u_interval = { 0.0, M_PI * 2 };
-        const Point2D v_interval = {0.0, M_PI * 2};
-
-        const ParametricSurface surface(functions, u_interval, v_interval);
-
-        const Point3D point = surface.EvaluatePoint({ M_PI, M_PI_4 });
-
-        EXPECT_DOUBLE_EQ(point.x, sin(M_PI) * cos(M_PI_4));
-        EXPECT_DOUBLE_EQ(point.y, sin(M_PI) * sin(M_PI_4));
-        EXPECT_DOUBLE_EQ(point.z, cos(M_PI));
-    }
-
-    TEST(NURBS_Chapter1, ParametricSurfPoints) {
-        constexpr uint32_t point_count = 100;
-        constexpr double div = (M_PI * 2) / static_cast<double>(point_count - 1);
-        std::array<std::function<double(Point2D)>, 3> functions;
-        functions[0] = [](Point2D uv) { return sin(uv.x) * cos(uv.y); };
-        functions[1] = [](Point2D uv) { return sin(uv.x) * sin(uv.y); };
-        functions[2] = [](Point2D uv) { return cos(uv.x); };
-        const Point2D u_interval = {0.0, M_PI * 2};
-        const Point2D v_interval = {0.0, M_PI * 2};
-
-        const ParametricSurface surface(functions, u_interval, v_interval);
-
-        const std::vector<Point3D> points = surface.EvaluatePoints(point_count, point_count);
-
-        for (uint32_t i = 0; i < point_count; ++i) {
-            const double u = static_cast<double>(i) * div;
-            for (uint32_t j = 0; j < point_count; ++j) {
-                const double v = static_cast<double>(j) * div;
-                const Point3D& point = points[(i * point_count) + j];
-
-                EXPECT_DOUBLE_EQ(point.x, sin(u) * cos(v));
-                EXPECT_DOUBLE_EQ(point.y, sin(u) * sin(v));
-                EXPECT_DOUBLE_EQ(point.z, cos(u));
-
-                const double length = sqrt(pow(points[i].x, 2.0) + pow(points[i].y, 2.0) + pow(points[i].z, 2.0));
-                EXPECT_DOUBLE_EQ(length, 1.0);
-            }
-        }
-    }
-     */
 }

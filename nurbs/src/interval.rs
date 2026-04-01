@@ -22,7 +22,7 @@ impl Interval {
         Interval::new(Point2D::new([1.0, -1.0]))
     }
 
-    pub fn from_vals(min: f64, max: f64) -> Interval {
+    pub fn from_values(min: f64, max: f64) -> Interval {
         Interval::new(Point2D::new([min, max]))
     }
 
@@ -82,7 +82,7 @@ mod tests {
 
     #[test]
     fn test_from_vals() {
-        let interval = Interval::from_vals(1.0, 2.0);
+        let interval = Interval::from_values(1.0, 2.0);
         assert!(interval.is_valid());
         assert!(f64_equal(interval.min(), 1.0));
         assert!(f64_equal(interval.max(), 2.0));
@@ -90,13 +90,13 @@ mod tests {
 
     #[test]
     fn test_mid() {
-        let interval = Interval::from_vals(-1.0, 1.0);
+        let interval = Interval::from_values(-1.0, 1.0);
         assert!(f64_equal(interval.mid(), 0.0));
 
-        let interval = Interval::from_vals(-10.0, -8.0);
+        let interval = Interval::from_values(-10.0, -8.0);
         assert!(f64_equal(interval.mid(), -9.0));
 
-        let interval = Interval::from_vals(6.0, 10.0);
+        let interval = Interval::from_values(6.0, 10.0);
         assert!(f64_equal(interval.mid(), 8.0));
     }
 

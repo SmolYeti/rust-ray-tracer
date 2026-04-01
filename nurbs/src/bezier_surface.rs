@@ -114,7 +114,7 @@ mod tests {
     use crate::utility::f64_equal;
 
     #[test]
-    fn test_bezier_surface_construct() {
+    fn test_construct() {
         let curves: Vec<BezierCurve3D> = Vec::new();
 
         let bezier = BezierSurface::from_curves(curves);
@@ -126,7 +126,7 @@ mod tests {
     }
 
     #[test]
-    fn test_bezier_surface_construct_from_points() {
+    fn test_construct_from_points() {
         let control_points = vec![
             Point3D::new([0.0, 0.0, 0.0]),
             Point3D::new([1.0, 0.0, 1.0]),
@@ -155,7 +155,7 @@ mod tests {
     }
 
     #[test]
-    fn test_bezier_surface_point() {
+    fn test_point() {
         let mut curves: Vec<BezierCurve3D> = Vec::with_capacity(4);
         {
             let control_points = vec![
@@ -212,7 +212,7 @@ mod tests {
     }
 
     #[test]
-    fn test_bezier_surface_point_interval() {
+    fn test_point_interval() {
         let u_interval = Interval::new(Point2D::new([0.0, 10.0]));
         let v_interval = Interval::new(Point2D::new([-12.0, -10.0]));
         let u_mid = u_interval.mid();
@@ -273,7 +273,7 @@ mod tests {
     }
 
     #[test]
-    fn test_bezier_surface_points() {
+    fn test_points() {
         let point_count = 100;
         let div = 1.0 / ((point_count - 1) as f64);
         let mut curves: Vec<BezierCurve3D> = Vec::with_capacity(4);
@@ -339,7 +339,7 @@ mod tests {
     }
 
     #[test]
-    fn test_bezier_surface_points_interval() {
+    fn test_points_interval() {
         let u_interval = Interval::new(Point2D::new([7.0, 10.0]));
         let v_interval = Interval::new(Point2D::new([-12.0, 20.0]));
         let point_count = 100;

@@ -240,7 +240,7 @@ mod tests {
     }
 
     #[test]
-    fn test_bezier_2d_construct() {
+    fn test_2d_construct() {
         let mut control_points = Vec::with_capacity(4);
         control_points.push(Point2D::new([0.0, 0.0]));
         control_points.push(Point2D::new([1.0, 0.0]));
@@ -254,7 +254,7 @@ mod tests {
     }
 
     #[test]
-    fn test_bezier_2d_point() {
+    fn test_2d_point() {
         let mut control_points = Vec::with_capacity(4);
         control_points.push(Point2D::new([0.0, 0.0]));
         control_points.push(Point2D::new([1.0, 0.0]));
@@ -291,7 +291,7 @@ mod tests {
     }
 
     #[test]
-    fn test_bezier_2d_point_interval() {
+    fn test_2d_point_interval() {
         let mut control_points = Vec::with_capacity(4);
         control_points.push(Point2D::new([0.0, 0.0]));
         control_points.push(Point2D::new([1.0, 0.0]));
@@ -300,7 +300,7 @@ mod tests {
 
         let bezier = BezierCurve2D::new(
             control_points.clone(),
-            Interval::new(Point2D::new([0.0, 10.0])),
+            Interval::from_values(0.0, 10.0),
         );
 
         let point = bezier.evaluate(5.0);
@@ -331,7 +331,7 @@ mod tests {
     }
 
     #[test]
-    fn test_bezier_2d_points() {
+    fn test_2d_points() {
         let mut control_points = Vec::with_capacity(4);
         control_points.push(Point2D::new([0.0, 0.0]));
         control_points.push(Point2D::new([1.0, 0.0]));
@@ -373,14 +373,14 @@ mod tests {
     }
 
     #[test]
-    fn test_bezier_2d_points_interval() {
+    fn test_2d_points_interval() {
         let mut control_points = Vec::with_capacity(4);
         control_points.push(Point2D::new([0.0, 0.0]));
         control_points.push(Point2D::new([1.0, 0.0]));
         control_points.push(Point2D::new([1.0, 1.0]));
         control_points.push(Point2D::new([0.0, 1.0]));
 
-        let bezier = BezierCurve2D::new(control_points.clone(), Interval::from_vals(0.0, 10.0));
+        let bezier = BezierCurve2D::new(control_points.clone(), Interval::from_values(0.0, 10.0));
 
         let points = bezier.evaluate_points(100);
 
@@ -415,7 +415,7 @@ mod tests {
     }
 
     #[test]
-    fn test_bezier_2d_end_derivatives() {
+    fn test_2d_end_derivatives() {
         let mut control_points = Vec::with_capacity(4);
         control_points.push(Point2D::new([0.0, 0.0]));
         control_points.push(Point2D::new([1.0, 1.0]));
@@ -461,14 +461,14 @@ mod tests {
     }
 
     #[test]
-    fn test_bezier_2d_end_derivatives_interval() {
+    fn test_2d_end_derivatives_interval() {
         let mut control_points = Vec::with_capacity(4);
         control_points.push(Point2D::new([0.0, 0.0]));
         control_points.push(Point2D::new([1.0, 1.0]));
         control_points.push(Point2D::new([2.0, 1.0]));
         control_points.push(Point2D::new([3.0, 0.0]));
 
-        let bezier = BezierCurve2D::new(control_points.clone(), Interval::from_vals(0.0, 17.5));
+        let bezier = BezierCurve2D::new(control_points.clone(), Interval::from_values(0.0, 17.5));
 
         let start = bezier.derivative(0.0);
         let end = bezier.derivative(17.5);
@@ -507,7 +507,7 @@ mod tests {
     }
 
     #[test]
-    fn test_bezier_2d_bernstein_vs_decasteljau() {
+    fn test_2d_bernstein_vs_decasteljau() {
         let mut control_points = Vec::with_capacity(4);
         control_points.push(Point2D::new([0.0, 0.0]));
         control_points.push(Point2D::new([1.0, 0.0]));
@@ -537,7 +537,7 @@ mod tests {
     }
 
     #[test]
-    fn test_bezier_2d_polynomial_compare() {
+    fn test_2d_polynomial_compare() {
         let mut control_points = Vec::with_capacity(4);
         control_points.push(Point2D::new([0.0, 0.0]));
         control_points.push(Point2D::new([1.0, 0.0]));
@@ -577,7 +577,7 @@ mod tests {
     }
 
     #[test]
-    fn test_bezier_2d_polynomial_compare_deriv_ex1_6() {
+    fn test_2d_polynomial_compare_deriv_ex1_6() {
         let control_points = vec![
             Point2D::new([0.0, 0.0]),
             Point2D::new([0.0, 1.0]),
@@ -604,7 +604,7 @@ mod tests {
     }
 
     #[test]
-    fn test_bezier_3d_construct() {
+    fn test_3d_construct() {
         let control_points = vec![
             Point3D::new([0.0, 0.0, 0.0]),
             Point3D::new([1.0, 0.0, 1.0]),
@@ -619,7 +619,7 @@ mod tests {
     }
 
     #[test]
-    fn test_bezier_3d_point() {
+    fn test_3d_point() {
         let control_points = vec![
             Point3D::new([0.0, 0.0, 0.0]),
             Point3D::new([1.0, 0.0, 1.0]),
@@ -663,7 +663,7 @@ mod tests {
     }
 
     #[test]
-    fn test_bezier_3d_point_interval() {
+    fn test_3d_point_interval() {
         let control_points = vec![
             Point3D::new([0.0, 0.0, 0.0]),
             Point3D::new([1.0, 0.0, 1.0]),
@@ -710,7 +710,7 @@ mod tests {
     }
 
     #[test]
-    fn test_bezier_3d_points() {
+    fn test_3d_points() {
         let control_points = vec![
             Point3D::new([0.0, 0.0, 0.0]),
             Point3D::new([1.0, 0.0, 1.0]),
@@ -759,7 +759,7 @@ mod tests {
     }
     
     #[test]
-    fn test_bezier_3d_points_interval() {
+    fn test_3d_points_interval() {
         let control_points = vec![
             Point3D::new([0.0, 0.0, 0.0]),
             Point3D::new([1.0, 0.0, 1.0]),
@@ -767,7 +767,7 @@ mod tests {
             Point3D::new([0.0, 1.0, 3.0]),
         ];
 
-        let bezier = BezierCurve3D::new(control_points.clone(), Interval::from_vals(0.0, 10.0));
+        let bezier = BezierCurve3D::new(control_points.clone(), Interval::from_values(0.0, 10.0));
 
         let points = bezier.evaluate_points(100);
 
@@ -808,7 +808,7 @@ mod tests {
     }
 
     #[test]
-    fn test_bezier_3d_end_derivatives() {
+    fn test_3d_end_derivatives() {
         let control_points = vec![
             Point3D::new([0.0, 0.0, 0.0]),
             Point3D::new([1.0, 0.0, 1.0]),
@@ -867,7 +867,7 @@ mod tests {
     }
 
     #[test]
-    fn test_bezier_3d_end_derivatives_interval() {
+    fn test_3d_end_derivatives_interval() {
         let control_points = vec![
             Point3D::new([0.0, 0.0, 0.0]),
             Point3D::new([1.0, 0.0, 1.0]),
@@ -875,7 +875,7 @@ mod tests {
             Point3D::new([0.0, 1.0, 3.0]),
         ];
 
-        let bezier = BezierCurve3D::new(control_points.clone(), Interval::from_vals(0.0, 17.5));
+        let bezier = BezierCurve3D::new(control_points.clone(), Interval::from_values(0.0, 17.5));
 
         let start = bezier.derivative(0.0);
         let end = bezier.derivative(17.5);
@@ -920,7 +920,7 @@ mod tests {
     }
 
     #[test]
-    fn test_bezier_3d_bernstein_vs_decasteljau() {
+    fn test_3d_bernstein_vs_decasteljau() {
         let control_points = vec![
             Point3D::new([0.0, 0.0, 0.0]),
             Point3D::new([1.0, 0.0, 1.0]),
@@ -957,7 +957,7 @@ mod tests {
     }
 
     #[test]
-    fn test_bezier_3d_polynomial_compare() {
+    fn test_3d_polynomial_compare() {
         let control_points = vec![
             Point3D::new([0.0, 0.0, 0.0]),
             Point3D::new([1.0, 0.0, 1.0]),
@@ -1004,7 +1004,7 @@ mod tests {
     }
 
     #[test]
-    fn test_bezier_3d_polynomial_compare_deriv_ex1_6() {
+    fn test_3d_polynomial_compare_deriv_ex1_6() {
         let control_points = vec![
             Point3D::new([0.0, 0.0, 0.0]),
             Point3D::new([1.0, 0.0, 1.0]),
